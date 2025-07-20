@@ -42,5 +42,6 @@
         "**/Temp": true,
         "**/Logs": true,
         "**/obj": true
-    }
+    },
+    "dotnet.defaultSolution": "unity.sln"
 }
