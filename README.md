@@ -13,8 +13,8 @@ A text-based, turn-based RPG built in Unity featuring Tolkien-inspired fantasy w
 
 - **Party-Based Combat**: Manage a party of 4 unique characters (Warrior, Ranger, Mage, Cleric)
 - **Turn-Based Strategy**: Tactical combat with initiative-based turn order
-- **Rich Magic System**: Three schools of magic (Fire, Frost, Poison) with distinct effects
-- **Weapon Variety**: Swords, axes, spears, and bows with unique mechanics
+- **Rich Magic System**: Three schools of magic (Fire, Water, Earth) with distinct effects
+- **Weapon & Armor System**: One-handed/two-handed weapons, light/medium/heavy armor, shields and staffs with poison enhancement options
 - **Currency System**: Three-tier economy (Copper/Silver/Gold) with auto-conversion
 - **Character Progression**: Experience-based leveling with attribute growth and skill specialization
 - **Immersive Text Interface**: Medieval fantasy aesthetic with rich narrative descriptions

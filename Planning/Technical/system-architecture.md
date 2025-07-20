@@ -97,8 +97,31 @@ public interface ICombatant
 public interface IWeapon
 {
     WeaponType Type { get; }
+    WeaponHandedness Handedness { get; } // OneHanded, TwoHanded
     int BaseDamage { get; }
     float CriticalChance { get; }
+    bool CanBeEnhanced { get; }
+    PoisonType AppliedPoison { get; }
+    int PoisonCharges { get; }
+    bool HasArmorPenetration { get; }
+}
+
+public interface IArmor
+{
+    ArmorType Type { get; } // Light, Medium, Heavy
+    int DefenseBonus { get; }
+    float MovementPenalty { get; }
+    float StealthPenalty { get; }
+    ElementalResistance[] Resistances { get; }
+}
+
+public interface IShield
+{
+    ShieldType Type { get; } // Buckler, Round, Tower, Magic
+    int DefenseBonus { get; }
+    float BlockChance { get; }
+    bool BlocksRangedAttacks { get; }
+    ElementalResistance[] Resistances { get; }
 }
 
 public interface ISpell
@@ -153,8 +176,38 @@ public class CharacterClassData : ScriptableObject
 public class WeaponData : ScriptableObject, IWeapon
 {
     public WeaponType weaponType;
+    public WeaponHandedness handedness;
     public int baseDamage;
     public float criticalChance;
+    public bool canBeEnhanced;
+    public bool hasArmorPenetration;
+    public float poisonEffectiveness;
+    public AttributeRequirements requirements;
+
+    [Header("Runtime Poison State")]
+    public PoisonType appliedPoison;
+    public int poisonCharges;
+}
+
+[CreateAssetMenu(fileName = "New Armor", menuName = "RPG/Armor")]
+public class ArmorData : ScriptableObject, IArmor
+{
+    public ArmorType armorType;
+    public int defenseBonus;
+    public float movementPenalty;
+    public float stealthPenalty;
+    public ElementalResistance[] resistances;
+    public AttributeRequirements requirements;
+}
+
+[CreateAssetMenu(fileName = "New Shield", menuName = "RPG/Shield")]
+public class ShieldData : ScriptableObject, IShield
+{
+    public ShieldType shieldType;
+    public int defenseBonus;
+    public float blockChance;
+    public bool blocksRangedAttacks;
+    public ElementalResistance[] resistances;
     public AttributeRequirements requirements;
 }
 ```

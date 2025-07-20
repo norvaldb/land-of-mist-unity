@@ -64,7 +64,7 @@
 
 - **Week 11-12**: Magic system
   - Spell casting framework
-  - Three magic schools (Fire, Frost, Poison)
+  - Three magic schools (Fire, Water, Earth)
   - Mana system and resource management
   - Status effects implementation
 

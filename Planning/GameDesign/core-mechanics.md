@@ -23,10 +23,26 @@ A text-based, turn-based RPG set in a Tolkien-inspired fantasy world featuring p
 
 - **Party Composition**: 4 distinct character slots
 - **Character Classes**:
-  - **Warrior**: Melee combat specialist, high defense, sword/axe mastery
-  - **Ranger**: Ranged combat, bow expertise, stealth abilities
-  - **Mage**: Spell casting, elemental magic, low physical defense
-  - **Cleric**: Healing, support magic, moderate combat ability
+  - **Warrior**:
+    - Melee combat specialist, high defense
+    - **Armor**: Heavy armor proficiency
+    - **Weapons**: All melee weapons, shields (especialy one-handed + shield combinations)
+    - **Preferred**: Sword/shield, great sword, great axe
+  - **Ranger**:
+    - Ranged combat, stealth abilities, nature skills
+    - **Armor**: Light to medium armor proficiency
+    - **Weapons**: Bows, crossbows, knives, spears, one-handed weapons
+    - **Preferred**: Bow, knife combinations, light weapons for mobility
+  - **Mage**:
+    - Spell casting, elemental magic, low physical defense
+    - **Armor**: Light armor only (robes, cloth)
+    - **Weapons**: Staffs, knives (for emergencies)
+    - **Preferred**: Staff for spell focus and mana regeneration
+  - **Cleric**:
+    - Healing, support magic, moderate combat ability
+    - **Armor**: Light to medium armor proficiency
+    - **Weapons**: One-handed weapons, shields, staffs, some two-handed weapons
+    - **Preferred**: Mace/shield combination, healing staff
 - **Party Roles**:
   - Tank (front-line defense)
   - DPS (damage dealers)
@@ -58,8 +74,10 @@ A text-based, turn-based RPG set in a Tolkien-inspired fantasy world featuring p
 - **Economic Balance**:
   - Starting equipment: 5-50 copper
   - Basic weapons/armor: 1-10 silver
-  - Rare equipment: 1-5 gold
-  - Epic items: 10+ gold
+  - Medium armor and shields: 5-20 silver
+  - Heavy armor and magic items: 1-5 gold
+  - Epic weapons and enchanted gear: 10+ gold
+  - Poison vials and consumables: 50 copper - 2 silver
 
 #### Dependencies
 
@@ -86,15 +104,68 @@ A text-based, turn-based RPG set in a Tolkien-inspired fantasy world featuring p
   - Defend (damage reduction)
   - Special Abilities (class-specific)
 - **Weapon Types**:
-  - **Swords**: Balanced damage, versatile, parry bonus
-  - **Axes**: High damage, slower speed, armor penetration
-  - **Spears**: Medium damage, reach advantage, formation bonus
-  - **Bows**: Ranged damage, requires ammunition, critical hit bonus
+  - **One-Handed Weapons**:
+    - **Swords**: Balanced damage, versatile, parry bonus, can use with shield
+    - **Axes (1H)**: High damage, armor penetration, can use with shield
+    - **Knives**: Fast attacks, high critical chance, can be thrown, stealth bonus
+  - **Two-Handed Weapons**:
+    - **Great Swords**: Very high damage, sweeping attacks, no shield use
+    - **Great Axes**: Massive damage, armor destruction, slow but devastating
+    - **Spears**: Medium damage, reach advantage, formation bonus, thrust attacks
+    - **Staffs**: Magic focus, spell damage bonus, mana regeneration, light physical damage
+  - **Ranged Weapons**:
+    - **Bows**: Ranged damage, requires ammunition, critical hit bonus, two-handed
+    - **Crossbows**: High damage, slower reload, armor penetration, two-handed
+- **Weapon Enhancements**:
+  - **Poisonous Weapons**: Can be coated with various toxins
+    - **Basic Poison**: Damage over time for 3 turns
+    - **Paralytic Poison**: Chance to stun target for 1 turn
+    - **Weakening Poison**: Reduces target's strength for 5 turns
+    - **Deadly Poison**: High damage over time, expensive and rare
+  - **Enhancement Application**:
+    - Poison coatings have limited uses (3-5 applications per vial)
+    - Can be applied during combat preparation or between fights
+    - Different weapon types have varying poison effectiveness
+    - Knives and arrows are most effective with poison coatings
+  - **Poison Resistance**: Some enemies may be immune or resistant
+- **Armor System**:
+  - **Light Armor**:
+    - Low defense bonus, no movement penalty
+    - Suitable for: Rangers, Mages
+    - Examples: Leather armor, robes, cloth garments
+    - Allows full dexterity and spellcasting mobility
+  - **Medium Armor**:
+    - Moderate defense bonus, slight movement penalty
+    - Suitable for: Clerics, hybrid classes
+    - Examples: Chain mail, studded leather, reinforced robes
+    - Balance between protection and mobility
+  - **Heavy Armor**:
+    - High defense bonus, significant movement penalty
+    - Suitable for: Warriors, Paladins
+    - Examples: Plate mail, full plate, heavy chain
+    - Maximum protection at cost of speed and stealth
+- **Shield System**:
+  - **Bucklers**: Small shield, minor defense bonus, allows weapon flexibility
+  - **Round Shields**: Medium defense, good for one-handed weapon users
+  - **Tower Shields**: High defense, requires strength, blocks ranged attacks
+  - **Magic Shields**: Spell resistance, mana-based abilities
+  - **Shield Mechanics**:
+    - Can only be used with one-handed weapons
+    - Provides block chance against physical attacks
+    - Some shields offer elemental resistance
+    - Active blocking consumes stamina but increases defense
 - **Damage Calculation**:
 
-  ```
+  ```text
   Base Damage = Weapon Damage + Attribute Modifier
-  Final Damage = Base Damage - Armor Defense + Critical Multiplier
+  Armor Reduction = Armor Defense + Shield Block (if applicable)
+  Final Damage = Base Damage - Armor Reduction + Critical Multiplier
+  Poison Damage = Applied separately each turn (bypasses armor)
+
+  Special Cases:
+  - Two-handed weapons: +25% damage bonus
+  - Armor penetration weapons: Ignore portion of armor
+  - Shield block: Chance-based additional defense
   ```
 
 #### Dependencies
@@ -102,6 +173,7 @@ A text-based, turn-based RPG set in a Tolkien-inspired fantasy world featuring p
 - Character attribute system
 - Equipment system
 - Magic system
+- Poison and status effect system
 
 ### 4. Magic System
 
@@ -114,15 +186,20 @@ A text-based, turn-based RPG set in a Tolkien-inspired fantasy world featuring p
 #### Design
 
 - **Magic Schools**:
-  - **Fire Magic**:
-    - Fireball: Single target, high damage, burn effect
-    - Flame Burst: Area damage, lower per-target damage
-  - **Frost Magic**:
-    - Frost Projectile: Single target, slow effect
-    - Ice Shield: Defensive spell, damage absorption
-  - **Poison Magic**:
-    - Poison Dart: Damage over time effect
-    - Toxic Cloud: Area poison, vision reduction
+  - **Fire Magic** (Destruction & Offense):
+    - Fireball: Single target, high damage, burn effect (damage over time)
+    - Flame Burst: Area damage, lower per-target damage, ignites flammables
+    - Ignite Weapon: Enchant weapon with fire damage for several turns
+  - **Water Magic** (Healing & Support):
+    - Healing Spring: Restore health over multiple turns to target
+    - Tidal Wave: Area knockback effect, moderate damage, extinguishes fires
+    - Purify: Remove negative status effects, poisons, and curses
+    - Mist Form: Reduce incoming damage for one turn, increase dodge
+  - **Earth Magic** (Defense & Control):
+    - Stone Armor: Increase defense significantly, reduce movement speed
+    - Earthquake: Area damage with chance to stun and knock prone
+    - Entangle: Root enemies in place, prevent movement and actions
+    - Boulder Throw: Long-range single target damage, ignores some armor
 - **Mana System**:
   - Each character has Mana Points (MP)
   - Spells consume MP based on power level
