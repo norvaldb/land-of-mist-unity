@@ -271,7 +271,7 @@ graph LR
 
 ### Development Tools
 
-- Unity 2023.3 LTS
+- Unity 6.1 LTS
 - Visual Studio Code with Unity extensions
 - Git version control
 - Automated testing framework

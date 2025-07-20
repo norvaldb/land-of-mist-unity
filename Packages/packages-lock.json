@@ -1,0 +1,11 @@
+{
+    "m_EnablePackageManagerTraces": false,
+    "m_AdvancedSettingsExpanded": true,
+    "m_ScopedRegistriesSettingsExpanded": true,
+    "m_SeeAllPackageVersions": false,
+    "oneTimeWarningShown": false,
+    "m_DismissPreviewPackagesInUse": false,
+    "m_DismissPreReleasePackagesInUse": false,
+    "m_EnablePreReleasePackages": false,
+    "m_EnablePackageDependencies": false
+}

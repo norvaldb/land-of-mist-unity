@@ -58,7 +58,7 @@ graph TB
 
 **Genre**: Text-based Turn-based RPG
 **Platform**: PC (Windows/Mac/Linux), with mobile adaptation potential
-**Engine**: Unity 2023.3 LTS
+**Engine**: Unity 6.1 LTS
 **Development Status**: Planning & Early Development
 
 ### Core Features
@@ -102,9 +102,18 @@ Comprehensive planning documents are available in the [`Planning/`](Planning/) d
 
 ## 🚀 Getting Started
 
+### Installation Status
+
+✅ **Project Structure**: Complete Unity project structure created
+✅ **Unity Hub**: Installed via official Debian repository (v3.13.0)
+⏳ **Unity Editor**: Need to install Unity 6.1 LTS via Unity Hub
+⏳ **Development**: Ready to begin Phase 1A implementation
+
+**Quick Start**: `./launch-unity-hub.sh` → Install Unity 6.1 LTS → Open Project
+
 ### Prerequisites
 
-- **Unity 2023.3 LTS** or later
+- **Unity 6.1 LTS** or later
 - **Visual Studio Code** (recommended) with Unity extensions
 - **Git** for version control
 
@@ -120,7 +129,7 @@ Comprehensive planning documents are available in the [`Planning/`](Planning/) d
 2. **Open in Unity**:
    - Launch Unity Hub
    - Click "Add" and select the project folder
-   - Open with Unity 2023.3 LTS
+   - Open with Unity 6.1 LTS
 
 3. **VS Code Setup** (Optional but recommended):
    - Open the project folder in VS Code

@@ -371,7 +371,7 @@ Brief description of the bug
 3. Step three
 
 ## 📱 Platform Information
-- Unity Version: 2023.3.0f1
+- Unity Version: 6.1.0f1
 - Platform: Windows/Mac/Mobile
 - Build Configuration: Debug/Release
 

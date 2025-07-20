@@ -67,6 +67,11 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 
+# Unity Hub AppImage and extracted files
+UnityHub.AppImage
+squashfs-root/
+unity-hub.log
+
 # ETC
 .DS_Store
 .DS_Store?
