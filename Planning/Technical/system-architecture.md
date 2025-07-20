@@ -325,21 +325,21 @@ public class SpellData : ScriptableObject, ISpell
 ```mermaid
 graph TD
     UM[UI Manager]
-    
+
     subgraph "Game HUD"
         GH[Game HUD]
         PSP[Party Status Panel]
         CD[Currency Display]
         ML[Message Log]
     end
-    
+
     subgraph "Combat Interface"
         CU[Combat UI]
         IO[Initiative Order]
         AB[Action Buttons]
         TS[Target Selection]
     end
-    
+
     subgraph "Menu System"
         MS[Menu System]
         INV[Inventory Menu]
@@ -351,15 +351,15 @@ graph TD
     UM --> GH
     UM --> CU
     UM --> MS
-    
+
     GH --> PSP
     GH --> CD
     GH --> ML
-    
+
     CU --> IO
     CU --> AB
     CU --> TS
-    
+
     MS --> INV
     MS --> CS
     MS --> SET
@@ -1164,7 +1164,7 @@ public void LoadTestConfiguration()
 graph TD
     subgraph "Adversary Hierarchy"
         ROOT[All Enemies]
-        
+
         subgraph "Humanoid Enemies"
             HUM[Humanoids]
             BAN[Bandits & Outlaws]
@@ -1172,7 +1172,7 @@ graph TD
             GUA[Corrupted Guards]
             MER[Mercenaries]
         end
-        
+
         subgraph "Wilderness Creatures"
             WIL[Wilderness]
             BEA[Beasts & Animals]
@@ -1180,7 +1180,7 @@ graph TD
             ELE[Elemental Beings]
             FAE[Fae Folk]
         end
-        
+
         subgraph "Undead Entities"
             UND[Undead]
             SKE[Skeletons & Zombies]
@@ -1188,7 +1188,7 @@ graph TD
             LOR[Undead Lords]
             LIC[Liches]
         end
-        
+
         subgraph "Boss Encounters"
             BOS[Bosses]
             CHA[Named Champions]
@@ -1202,22 +1202,22 @@ graph TD
     ROOT --> WIL
     ROOT --> UND
     ROOT --> BOS
-    
+
     HUM --> BAN
     HUM --> ADV
     HUM --> GUA
     HUM --> MER
-    
+
     WIL --> BEA
     WIL --> MAG
     WIL --> ELE
     WIL --> FAE
-    
+
     UND --> SKE
     UND --> WRA
     UND --> LOR
     UND --> LIC
-    
+
     BOS --> CHA
     BOS --> ANC
     BOS --> DRA
@@ -2505,15 +2505,15 @@ sequenceDiagram
     Player->>DifficultyUI: Select Difficulty
     DifficultyUI->>BalanceManager: SetDifficulty(level)
     BalanceManager->>BalanceManager: LoadDifficultySettings()
-    
+
     Note over BalanceManager: Store difficulty multipliers
-    
+
     BalanceManager->>CombatSystem: ApplyDamageMultipliers()
     BalanceManager->>EnemyManager: ApplyEnemyScaling()
     BalanceManager->>SaveSystem: ConfigureDeathHandling()
-    
+
     Note over SaveSystem: Enable/Disable Permadeath
-    
+
     CombatSystem->>Player: Modified Combat Experience
     EnemyManager->>Player: Scaled Enemy Encounters
     SaveSystem->>Player: Difficulty-Appropriate Save Behavior

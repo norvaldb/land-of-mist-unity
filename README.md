@@ -1,6 +1,6 @@
 # Land of Mist Unity RPG
 
-A text-based, turn-based RPG built in Unity, featuring tactical party-based combat, character progression, and immersive storytelling in a Tolkien-inspired fantasy world.
+A text-based, turn-based RPG built in Unity, featuring tactical party-based combat, character progression, and immersive storytelling in a Mythral-inspired fantasy world.
 
 ## System Architecture Overview
 

@@ -14,13 +14,13 @@ gantt
     section Phase 1: Foundation
     Project Setup           :p1setup, 2025-07-20, 2w
     Data Systems           :p1data, after p1setup, 2w
-    
+
     section Phase 2: Core Gameplay
     Character System       :p2char, after p1data, 2w
     Combat Implementation  :p2combat, after p2char, 3w
     Magic System          :p2magic, after p2combat, 2w
     Equipment System      :p2equip, after p2magic, 1w
-    
+
     section Phase 3: Content & Polish
     UI Implementation     :p3ui, after p2equip, 3w
     Content Creation      :p3content, after p3ui, 2w
@@ -41,14 +41,14 @@ graph LR
         D[Scene Management]
         E[Git Repository]
     end
-    
+
     subgraph "Week 3-4: Data Systems"
         F[ScriptableObjects]
         G[Save/Load System]
         H[Currency System]
         I[Character Data]
     end
-    
+
     A --> B
     B --> C
     C --> D
@@ -57,7 +57,7 @@ graph LR
     F --> G
     G --> H
     H --> I
-    
+
     style A fill:#e3f2fd
     style F fill:#e8f5e8
 ```
@@ -167,7 +167,7 @@ graph LR
 
 #### Success Criteria
 
-- UI follows Lord of the Rings aesthetic theme
+- UI follows Land of Mist aesthetic theme
 - All game functions accessible through text interface
 - Combat is fully playable with clear feedback
 - New players can understand systems through tutorials
@@ -198,7 +198,7 @@ graph LR
 
 #### Deliverables
 
-- Rich fantasy world with Tolkien-inspired atmosphere
+- Rich fantasy world with Mythral-inspired atmosphere
 - Balanced progression system
 - Diverse equipment options
 - Stable, polished gameplay
@@ -282,7 +282,7 @@ graph LR
 - Medieval fantasy fonts (free/paid licenses)
 - Sound effects for text-based feedback (optional)
 - Icon sets for UI elements
-- Reference materials for Tolkien-inspired world
+- Reference materials for Mythral-inspired world
 
 ### Testing Resources
 

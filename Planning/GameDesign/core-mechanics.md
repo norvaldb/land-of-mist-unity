@@ -6,7 +6,7 @@ Define the fundamental gameplay systems that drive the Land of Mist RPG experien
 
 ## Game Overview
 
-A text-based, turn-based RPG set in a Tolkien-inspired fantasy world featuring party-based combat, tactical decision-making, and character progression.
+A text-based, turn-based RPG set in a Mythral-inspired fantasy world featuring party-based combat, tactical decision-making, and character progression.
 
 ### Core Game Loop
 
@@ -14,36 +14,40 @@ A text-based, turn-based RPG set in a Tolkien-inspired fantasy world featuring p
 stateDiagram-v2
     [*] --> CharacterCreation
     CharacterCreation --> Exploration
-    
-    state Exploration {
+
+    stat```text
+  [Warrior] Theron     HP: 45/50  MP: 5/10   [Poisoned]
+  [Ranger]  Sylvain    HP: 35/40  MP: 15/20  [Ready]
+  [Mage]    Valdris    HP: 20/25  MP: 40/50  [Casting]
+  [Cleric]  Aelindra   HP: 30/35  MP: 25/30  [Ready]ploration {
         [*] --> Movement
         Movement --> RandomEncounter: Encounter Check
         Movement --> Discovery: Find Location
         Movement --> Rest: Party Needs Rest
-        
+
         RandomEncounter --> Combat
         Discovery --> Interaction
         Rest --> Movement
-        
+
         Combat --> Victory
         Combat --> Defeat
         Victory --> LootRewards
         LootRewards --> Movement
-        
+
         Defeat --> GameOver: All Dead (Hard Mode)
         Defeat --> Respawn: Save System (Easy/Normal)
         Respawn --> Movement
-        
+
         Interaction --> QuestProgress
         QuestProgress --> Movement
     }
-    
+
     Exploration --> CharacterProgression: Level Up
     CharacterProgression --> Exploration
-    
+
     Exploration --> GameCompletion: Final Quest
     GameCompletion --> [*]
-    
+
     GameOver --> [*]
 ```
 
@@ -78,19 +82,19 @@ graph TD
             WM[Melee Combat]
             WD[High Defense]
         end
-        
+
         subgraph "Ranger Focus"
             RT[Ranged DPS]
             RS[Stealth & Utility]
             RN[Nature Skills]
         end
-        
+
         subgraph "Mage Focus"
             MM[Elemental Magic]
             MS[Spell Casting]
             MC[Crowd Control]
         end
-        
+
         subgraph "Cleric Focus"
             CH[Healing Magic]
             CS[Support Buffs]
@@ -106,15 +110,15 @@ graph TD
     W --> WT
     W --> WM
     W --> WD
-    
+
     R --> RT
     R --> RS
     R --> RN
-    
+
     M --> MM
     M --> MS
     M --> MC
-    
+
     C --> CH
     C --> CS
     C --> CD
@@ -308,14 +312,14 @@ graph TD
 graph TB
     subgraph "Magic School System"
         MS[Magic Schools]
-        
+
         subgraph "🔥 Fire Magic - Destruction"
             F[Fire School]
             FB[Fireball<br/>Single Target High Damage]
             FLB[Flame Burst<br/>Area Damage]
             IW[Ignite Weapon<br/>Weapon Enchantment]
         end
-        
+
         subgraph "💧 Water Magic - Healing & Support"
             W[Water School]
             HS[Healing Spring<br/>Health Over Time]
@@ -323,7 +327,7 @@ graph TB
             PU[Purify<br/>Remove Status Effects]
             MF[Mist Form<br/>Damage Reduction]
         end
-        
+
         subgraph "🌍 Earth Magic - Defense & Control"
             E[Earth School]
             SA[Stone Armor<br/>Defense Increase]
@@ -331,7 +335,7 @@ graph TB
             EN[Entangle<br/>Root Enemies]
             BT[Boulder Throw<br/>Ranged Damage]
         end
-        
+
         subgraph "Mana System"
             MP[Mana Points]
             MR[Mana Regeneration]
@@ -343,25 +347,25 @@ graph TB
     MS --> F
     MS --> W
     MS --> E
-    
+
     F --> FB
     F --> FLB
     F --> IW
-    
+
     W --> HS
     W --> TW
     W --> PU
     W --> MF
-    
+
     E --> SA
     E --> EQ
     E --> EN
     E --> BT
-    
+
     F -.-> MP
     W -.-> MP
     E -.-> MP
-    
+
     MP --> MR
     MP --> MC
     MP --> MI
