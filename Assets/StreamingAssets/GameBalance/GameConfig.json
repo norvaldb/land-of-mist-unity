@@ -1,0 +1,170 @@
+{
+  "configVersion": "1.0.0",
+  "lastModified": "2025-07-21 00:00:00",
+  "description": "Land of Mist RPG Balance Configuration - Carefully tuned for tactical turn-based combat",
+  
+  "combat": {
+    "baseCriticalChance": 0.05,
+    "criticalDamageMultiplier": 1.5,
+    "baseDodgeChance": 0.1,
+    "baseBlockChance": 0.15,
+    
+    "swordDamageMultiplier": 1.0,
+    "bowDamageMultiplier": 0.9,
+    "staffDamageMultiplier": 1.1,
+    "maceDamageMultiplier": 1.0,
+    "knifeDamageMultiplier": 0.8,
+    "spearDamageMultiplier": 1.0,
+    "axeDamageMultiplier": 1.1,
+    "crossbowDamageMultiplier": 1.0,
+    "greatSwordDamageMultiplier": 1.3,
+    "greatAxeDamageMultiplier": 1.4,
+    
+    "lightArmorEffectiveness": 1.0,
+    "mediumArmorEffectiveness": 1.2,
+    "heavyArmorEffectiveness": 1.5,
+    
+    "baseInitiative": 10.0,
+    "dexterityInitiativeBonus": 1.0,
+    "armorInitiativePenalty": 0.1
+  },
+  
+  "progression": {
+    "baseExperienceRequired": 100,
+    "experienceScaling": 1.2,
+    "maxLevel": 20,
+    
+    "warriorAttributeGrowth": 1.2,
+    "rangerAttributeGrowth": 1.1,
+    "mageAttributeGrowth": 1.0,
+    "clericAttributeGrowth": 1.1,
+    
+    "baseHPPerLevel": 8,
+    "baseMPPerLevel": 4,
+    "constitutionHPBonus": 1.0,
+    "intelligenceMPBonus": 1.5,
+    "wisdomMPBonus": 1.0
+  },
+  
+  "economy": {
+    "startingCopper": 50,
+    "startingSilver": 5,
+    "startingGold": 0,
+    
+    "weaponPriceMultiplier": 1.0,
+    "armorPriceMultiplier": 1.2,
+    "shieldPriceMultiplier": 0.8,
+    "consumablePriceMultiplier": 0.5,
+    "poisonPriceMultiplier": 2.0,
+    
+    "shopBuyPriceMultiplier": 1.2,
+    "shopSellPriceMultiplier": 0.6,
+    "rarityPriceMultiplier": 1.0,
+    
+    "baseLootChance": 0.3,
+    "luckLootBonus": 0.05,
+    "baseCurrencyDrop": {
+      "totalCopper": 125
+    }
+  },
+  
+  "magic": {
+    "baseManaRegenerationRate": 1.0,
+    "manaRegenerationMultiplier": 1.0,
+    "intelligenceManaBonus": 2.0,
+    "wisdomManaBonus": 1.0,
+    
+    "fireSpellPowerMultiplier": 1.2,
+    "waterSpellPowerMultiplier": 1.0,
+    "earthSpellPowerMultiplier": 0.9,
+    
+    "baseManaScaling": 1.0,
+    "spellLevelCostMultiplier": 0.3,
+    "intelligenceCostReduction": 0.02,
+    
+    "spellCriticalChance": 0.08,
+    "spellCriticalMultiplier": 1.8
+  },
+  
+  "poison": {
+    "weakPoisonDamage": 2,
+    "strongPoisonDamage": 5,
+    "paralysisPoisonDamage": 1,
+    "weaknessPoisonDamage": 1,
+    
+    "weakPoisonDuration": 3,
+    "strongPoisonDuration": 5,
+    "paralysisPoisonDuration": 2,
+    "weaknessPoisonDuration": 4,
+    
+    "poisonApplicationChance": 0.3,
+    "poisonResistanceBase": 0.1,
+    "constitutionResistanceBonus": 0.02,
+    
+    "baseChargesPerApplication": 5,
+    "chargesPerPoisonLevel": 3
+  },
+  
+  "easy": {
+    "playerDamageMultiplier": 1.2,
+    "playerHealthMultiplier": 1.3,
+    "playerManaMultiplier": 1.2,
+    "playerExperienceMultiplier": 1.5,
+    
+    "enemyDamageMultiplier": 0.7,
+    "enemyHealthMultiplier": 0.8,
+    "enemyAccuracyMultiplier": 0.9,
+    "enemyLootMultiplier": 1.2,
+    
+    "currencyDropMultiplier": 1.3,
+    "shopPriceMultiplier": 0.8,
+    "repairCostMultiplier": 0.7,
+    
+    "permadeathEnabled": false,
+    "autoSaveEnabled": true,
+    "poisonDamageMultiplier": 0.5,
+    "magicDamageMultiplier": 1.0
+  },
+  
+  "normal": {
+    "playerDamageMultiplier": 1.0,
+    "playerHealthMultiplier": 1.0,
+    "playerManaMultiplier": 1.0,
+    "playerExperienceMultiplier": 1.0,
+    
+    "enemyDamageMultiplier": 1.0,
+    "enemyHealthMultiplier": 1.0,
+    "enemyAccuracyMultiplier": 1.0,
+    "enemyLootMultiplier": 1.0,
+    
+    "currencyDropMultiplier": 1.0,
+    "shopPriceMultiplier": 1.0,
+    "repairCostMultiplier": 1.0,
+    
+    "permadeathEnabled": false,
+    "autoSaveEnabled": true,
+    "poisonDamageMultiplier": 1.0,
+    "magicDamageMultiplier": 1.0
+  },
+  
+  "hard": {
+    "playerDamageMultiplier": 0.8,
+    "playerHealthMultiplier": 0.8,
+    "playerManaMultiplier": 0.9,
+    "playerExperienceMultiplier": 0.8,
+    
+    "enemyDamageMultiplier": 1.3,
+    "enemyHealthMultiplier": 1.4,
+    "enemyAccuracyMultiplier": 1.1,
+    "enemyLootMultiplier": 0.8,
+    
+    "currencyDropMultiplier": 0.8,
+    "shopPriceMultiplier": 1.3,
+    "repairCostMultiplier": 1.5,
+    
+    "permadeathEnabled": true,
+    "autoSaveEnabled": false,
+    "poisonDamageMultiplier": 1.5,
+    "magicDamageMultiplier": 1.2
+  }
+}

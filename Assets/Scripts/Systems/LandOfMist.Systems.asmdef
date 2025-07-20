@@ -1,0 +1,18 @@
+{
+    "name": "LandOfMist.Systems",
+    "rootNamespace": "LandOfMist.Systems",
+    "references": [
+        "LandOfMist.Core"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "System.IO.Abstractions.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
