@@ -1,0 +1,11 @@
+{
+    "recommendations": [
+        "ms-dotnettools.csharp",
+        "visualstudiotoolsforunity.vstuc",
+        "kleber-swf.unity-code-snippets",
+        "ms-vscode.vscode-json",
+        "davidanson.vscode-markdownlint",
+        "ms-vscode.test-adapter-converter",
+        "formulahendry.code-runner"
+    ]
+}

@@ -1,0 +1,46 @@
+{
+    "C_Cpp.errorSquiggles": "disabled",
+    "omnisharp.useGlobalMono": "never",
+    "files.exclude": {
+        "**/.DS_Store": true,
+        "**/.git": true,
+        "**/.gitignore": true,
+        "**/*.booproj": true,
+        "**/*.pidb": true,
+        "**/*.suo": true,
+        "**/*.user": true,
+        "**/*.userprefs": true,
+        "**/*.unityproj": true,
+        "**/*.dll": true,
+        "**/*.exe": true,
+        "**/Library": true,
+        "**/obj": true,
+        "**/Temp": true,
+        "**/Logs": true,
+        "**/MemoryCaptures": true,
+        "**/UserSettings": true
+    },
+    "files.associations": {
+        "*.cs": "csharp"
+    },
+    "editor.formatOnSave": true,
+    "editor.detectIndentation": false,
+    "editor.insertSpaces": true,
+    "editor.tabSize": 4,
+    "editor.rulers": [
+        120
+    ],
+    "csharp.format.enable": true,
+    "csharp.semanticHighlighting.enabled": true,
+    "dotnetAcquisitionExtension.enableTelemetry": false,
+    "markdown.validate.enabled": true,
+    "markdown.preview.fontSize": 14,
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "search.exclude": {
+        "**/Library": true,
+        "**/Temp": true,
+        "**/Logs": true,
+        "**/obj": true
+    }
+}

@@ -1,0 +1,75 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build Unity Project",
+            "type": "shell",
+            "command": "echo",
+            "args": [
+                "Unity project structure created. Open in Unity Editor to build."
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Generate Unity Project Files",
+            "type": "shell",
+            "command": "echo",
+            "args": [
+                "To generate Unity project files: 1) Open Unity Hub 2) Add project from this folder 3) Open with Unity 2023.3 LTS"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Unit Tests",
+            "type": "shell",
+            "command": "echo",
+            "args": [
+                "Unit tests will be available after Unity project setup. Use Unity Test Framework in Unity Editor."
+            ],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Format Code",
+            "type": "shell",
+            "command": "find",
+            "args": [
+                "Assets/Scripts",
+                "-name",
+                "*.cs",
+                "-exec",
+                "echo",
+                "Found C# file: {}",
+                ";"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "silent",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        }
+    ]
+}
