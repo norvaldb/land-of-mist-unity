@@ -1,6 +1,58 @@
 # Land of Mist Unity RPG
 
-A text-based, turn-based RPG built in Unity featuring Tolkien-inspired fantasy world, party-based combat, and tactical decision-making.
+A text-based, turn-based RPG built in Unity, featuring tactical party-based combat, character progression, and immersive storytelling in a Tolkien-inspired fantasy world.
+
+## System Architecture Overview
+
+```mermaid
+graph TB
+    subgraph "🎮 Game Features"
+        PB[Party-Based Combat<br/>4 Character Classes]
+        TB[Turn-Based Strategy<br/>Initiative System]
+        MS[Magic System<br/>Fire/Water/Earth Schools]
+        ES[Equipment System<br/>Weapons/Armor/Shields]
+        CS[Currency System<br/>Copper/Silver/Gold]
+        DS[Difficulty Scaling<br/>Easy/Normal/Hard]
+    end
+
+    subgraph "🏗️ Technical Foundation"
+        SA[SOLID Architecture]
+        ED[Event-Driven Design]
+        SO[ScriptableObject Data]
+        JB[JSON Balancing]
+        FS[File-Based Storage]
+        UT[Unit Testing]
+    end
+
+    subgraph "📋 Planning & Documentation"
+        CD[Core Mechanics Design]
+        TA[Technical Architecture]
+        DR[Development Roadmap]
+        GD[Game Design Docs]
+    end
+
+    %% Feature Connections
+    PB --> SA
+    TB --> ED
+    MS --> SO
+    ES --> JB
+    CS --> FS
+    DS --> JB
+
+    %% Documentation Connections
+    CD -.-> PB
+    CD -.-> TB
+    CD -.-> MS
+    TA -.-> SA
+    TA -.-> ED
+    DR -.-> SA
+
+    style PB fill:#ffcdd2
+    style TB fill:#c8e6c9
+    style MS fill:#e1bee7
+    style SA fill:#e3f2fd
+    style CD fill:#fff3e0
+```
 
 ## 🎮 Game Overview
 

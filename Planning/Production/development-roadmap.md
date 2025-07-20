@@ -5,9 +5,62 @@
 **Project Duration**: 6-8 months (part-time development)
 **Target Platforms**: PC (Windows/Mac/Linux), with mobile adaptation potential
 
+## Development Timeline
+
+```mermaid
+gantt
+    title Land of Mist RPG Development Timeline
+    dateFormat  YYYY-MM-DD
+    section Phase 1: Foundation
+    Project Setup           :p1setup, 2025-07-20, 2w
+    Data Systems           :p1data, after p1setup, 2w
+    
+    section Phase 2: Core Gameplay
+    Character System       :p2char, after p1data, 2w
+    Combat Implementation  :p2combat, after p2char, 3w
+    Magic System          :p2magic, after p2combat, 2w
+    Equipment System      :p2equip, after p2magic, 1w
+    
+    section Phase 3: Content & Polish
+    UI Implementation     :p3ui, after p2equip, 3w
+    Content Creation      :p3content, after p3ui, 2w
+    Testing & Balancing   :p3test, after p3content, 2w
+    Polish & Release      :p3polish, after p3test, 1w
+```
+
 ## Development Phases
 
 ### Phase 1: Foundation (Weeks 1-4)
+
+```mermaid
+graph LR
+    subgraph "Week 1-2: Infrastructure"
+        A[Unity Setup]
+        B[SOLID Architecture]
+        C[Event System]
+        D[Scene Management]
+        E[Git Repository]
+    end
+    
+    subgraph "Week 3-4: Data Systems"
+        F[ScriptableObjects]
+        G[Save/Load System]
+        H[Currency System]
+        I[Character Data]
+    end
+    
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+    F --> G
+    G --> H
+    H --> I
+    
+    style A fill:#e3f2fd
+    style F fill:#e8f5e8
+```
 
 #### Core Infrastructure
 

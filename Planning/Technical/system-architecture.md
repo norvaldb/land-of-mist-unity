@@ -8,24 +8,74 @@ Define the technical architecture for the Unity text-based RPG, focusing on SOLI
 
 ### High-Level System Design
 
-```text
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   UI Layer      │    │  Game Logic     │    │   Data Layer    │
-│                 │    │                 │    │                 │
-│ - Text Renderer │◄──►│ - Game Manager  │◄──►│ - Save System   │
-│ - Input Handler │    │ - Combat System │    │ - ScriptableObj │
-│ - UI Manager    │    │ - Party Manager │    │ - Config Data   │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         └───────────────────────┼───────────────────────┘
-                                 │
-                    ┌─────────────────┐
-                    │  Event System   │
-                    │                 │
-                    │ - Game Events   │
-                    │ - UI Events     │
-                    │ - Combat Events │
-                    └─────────────────┘
+```mermaid
+graph TB
+    subgraph "UI Layer"
+        UI[UI Manager]
+        TR[Text Renderer]
+        IH[Input Handler]
+        HUD[Game HUD]
+        CM[Combat Menu]
+        IM[Inventory Menu]
+    end
+
+    subgraph "Game Logic Layer"
+        GM[Game Manager]
+        PM[Party Manager]
+        CS[Combat System]
+        BM[Balance Manager]
+        EM[Enemy Manager]
+        EN[Encounter Manager]
+    end
+
+    subgraph "Data Layer"
+        SS[Save System]
+        SO[ScriptableObjects]
+        CD[Config Data]
+        ED[Enemy Database]
+        BD[Balance Data]
+    end
+
+    subgraph "Event System"
+        GE[Game Events]
+        UE[UI Events]
+        CE[Combat Events]
+        DE[Difficulty Events]
+    end
+
+    %% UI to Game Logic
+    UI <--> GM
+    TR <--> CS
+    IH <--> PM
+    HUD <--> PM
+    CM <--> CS
+    IM <--> PM
+
+    %% Game Logic Internal
+    GM <--> PM
+    GM <--> CS
+    CS <--> BM
+    CS <--> EM
+    GM <--> EN
+    BM <--> EM
+
+    %% Game Logic to Data
+    PM <--> SS
+    CS <--> SO
+    BM <--> CD
+    EM <--> ED
+    BM <--> BD
+
+    %% Event System Connections
+    GM -.-> GE
+    UI -.-> UE
+    CS -.-> CE
+    BM -.-> DE
+
+    style GM fill:#e1f5fe
+    style BM fill:#f3e5f5
+    style EM fill:#e8f5e8
+    style SS fill:#fff3e0
 ```
 
 ## Core System Components
@@ -64,24 +114,65 @@ public class GameManager : MonoBehaviour
 
 **Data Flow:**
 
-```text
-PartyManager
-    ├── Character[0] (Warrior)
-    ├── Character[1] (Ranger)
-    ├── Character[2] (Mage)
-    └── Character[3] (Cleric)
+```mermaid
+flowchart LR
+    subgraph "Party Structure"
+        PM[Party Manager]
+        C1[Character 1<br/>Warrior]
+        C2[Character 2<br/>Ranger]
+        C3[Character 3<br/>Mage]
+        C4[Character 4<br/>Cleric]
+    end
+
+    PM --> C1
+    PM --> C2
+    PM --> C3
+    PM --> C4
+
+    subgraph "Character Data"
+        CC[Character Class]
+        EQ[Equipment]
+        ST[Stats]
+        AB[Abilities]
+    end
+
+    C1 --> CC
+    C1 --> EQ
+    C1 --> ST
+    C1 --> AB
+
+    style PM fill:#e3f2fd
+    style C1 fill:#ffebee
+    style C2 fill:#e8f5e8
+    style C3 fill:#f3e5f5
+    style C4 fill:#fff8e1
 ```
 
 ### 3. Combat System Architecture
 
 **Turn-Based Combat Flow:**
 
-1. Initialize combat encounter
-2. Calculate initiative order
-3. Process character turns sequentially
-4. Apply damage/effects
-5. Check victory conditions
-6. Resolve combat
+```mermaid
+stateDiagram-v2
+    [*] --> InitializeCombat
+    InitializeCombat --> CalculateInitiative
+    CalculateInitiative --> DetermineOrder
+    DetermineOrder --> ProcessTurn
+
+    ProcessTurn --> ChooseAction
+    ChooseAction --> ExecuteAction
+    ExecuteAction --> ApplyEffects
+    ApplyEffects --> CheckVictory
+
+    CheckVictory --> CombatEnd: Victory Achieved
+    CheckVictory --> NextTurn: Continue Combat
+    NextTurn --> ProcessTurn
+
+    CombatEnd --> [*]
+
+    note left of ProcessTurn : Current Combatant's Turn
+    note right of CheckVictory : Health/Status Check
+```
 
 **Key Interfaces:**
 
@@ -231,20 +322,53 @@ public class SpellData : ScriptableObject, ISpell
 
 **Component Hierarchy:**
 
-```text
-UIManager
-├── GameHUD
-│   ├── PartyStatusPanel
-│   ├── CurrencyDisplay
-│   └── MessageLog
-├── CombatUI
-│   ├── InitiativeOrder
-│   ├── ActionButtons
-│   └── TargetSelection
-└── MenuSystem
-    ├── InventoryMenu
-    ├── CharacterSheet
-    └── SettingsMenu
+```mermaid
+graph TD
+    UM[UI Manager]
+    
+    subgraph "Game HUD"
+        GH[Game HUD]
+        PSP[Party Status Panel]
+        CD[Currency Display]
+        ML[Message Log]
+    end
+    
+    subgraph "Combat Interface"
+        CU[Combat UI]
+        IO[Initiative Order]
+        AB[Action Buttons]
+        TS[Target Selection]
+    end
+    
+    subgraph "Menu System"
+        MS[Menu System]
+        INV[Inventory Menu]
+        CS[Character Sheet]
+        SET[Settings Menu]
+        DIF[Difficulty Selection]
+    end
+
+    UM --> GH
+    UM --> CU
+    UM --> MS
+    
+    GH --> PSP
+    GH --> CD
+    GH --> ML
+    
+    CU --> IO
+    CU --> AB
+    CU --> TS
+    
+    MS --> INV
+    MS --> CS
+    MS --> SET
+    MS --> DIF
+
+    style UM fill:#e1f5fe
+    style GH fill:#e8f5e8
+    style CU fill:#ffebee
+    style MS fill:#f3e5f5
 ```
 
 **UI Event System:**
@@ -846,7 +970,7 @@ public class BalanceManager : MonoBehaviour
             WeaponType.Ranged => config.combat.damageMultipliers.rangedWeapons,
             _ => 1.0f
         };
-        
+
         // Apply difficulty modifier
         return baseMultiplier * GetCurrentDifficultySettings().playerDamageMultiplier;
     }
@@ -1036,24 +1160,74 @@ public void LoadTestConfiguration()
 
 **Enemy Categories:**
 
-```text
-Adversary Hierarchy:
-├── Humanoid Enemies
-│   ├── Bandits & Outlaws
-│   ├── Rival Adventurers
-│   └── Corrupted Guards
-├── Wilderness Creatures
-│   ├── Beasts & Animals
-│   ├── Magical Creatures
-│   └── Elemental Beings
-├── Undead Entities
-│   ├── Skeletons & Zombies
-│   ├── Wraiths & Spirits
-│   └── Undead Lords
-└── Boss Encounters
-    ├── Named Champions
-    ├── Ancient Evils
-    └── Dragon-kin
+```mermaid
+graph TD
+    subgraph "Adversary Hierarchy"
+        ROOT[All Enemies]
+        
+        subgraph "Humanoid Enemies"
+            HUM[Humanoids]
+            BAN[Bandits & Outlaws]
+            ADV[Rival Adventurers]
+            GUA[Corrupted Guards]
+            MER[Mercenaries]
+        end
+        
+        subgraph "Wilderness Creatures"
+            WIL[Wilderness]
+            BEA[Beasts & Animals]
+            MAG[Magical Creatures]
+            ELE[Elemental Beings]
+            FAE[Fae Folk]
+        end
+        
+        subgraph "Undead Entities"
+            UND[Undead]
+            SKE[Skeletons & Zombies]
+            WRA[Wraiths & Spirits]
+            LOR[Undead Lords]
+            LIC[Liches]
+        end
+        
+        subgraph "Boss Encounters"
+            BOS[Bosses]
+            CHA[Named Champions]
+            ANC[Ancient Evils]
+            DRA[Dragon-kin]
+            GOD[Fallen Deities]
+        end
+    end
+
+    ROOT --> HUM
+    ROOT --> WIL
+    ROOT --> UND
+    ROOT --> BOS
+    
+    HUM --> BAN
+    HUM --> ADV
+    HUM --> GUA
+    HUM --> MER
+    
+    WIL --> BEA
+    WIL --> MAG
+    WIL --> ELE
+    WIL --> FAE
+    
+    UND --> SKE
+    UND --> WRA
+    UND --> LOR
+    UND --> LIC
+    
+    BOS --> CHA
+    BOS --> ANC
+    BOS --> DRA
+    BOS --> GOD
+
+    style ROOT fill:#f9f9f9
+    style HUM fill:#ffebee
+    style WIL fill:#e8f5e8
+    style UND fill:#e3f2fd
+    style BOS fill:#fff3e0
 ```
 
 ### Enemy Configuration Files
@@ -1945,12 +2119,12 @@ public class EncounterManager : MonoBehaviour
     {
         var difficultySettings = BalanceManager.Instance.GetCurrentDifficultySettings();
         float adjustedChance = baseEncounterChance * difficultySettings.encounterFrequency;
-        
+
         // Increase chance based on distance traveled without encounter
         float scaledChance = adjustedChance + (distanceSinceLastEncounter * 0.02f);
-        
+
         bool shouldTrigger = Random.value < scaledChance;
-        
+
         if (shouldTrigger)
         {
             distanceSinceLastEncounter = 0f;
@@ -1959,7 +2133,7 @@ public class EncounterManager : MonoBehaviour
         {
             distanceSinceLastEncounter += 1f;
         }
-        
+
         return shouldTrigger;
     }
 
@@ -1971,7 +2145,7 @@ public class EncounterManager : MonoBehaviour
         // Adjust encounter type probabilities based on difficulty
         var roll = Random.Range(0f, 100f);
         string encounterType;
-        
+
         if (BalanceManager.Instance.currentDifficulty == DifficultyLevel.Easy)
         {
             // Easy: More common encounters, fewer bosses
@@ -2019,7 +2193,7 @@ public class EncounterManager : MonoBehaviour
         foreach (var enemyGroup in data.enemies)
         {
             int count = DiceRoller.Roll(enemyGroup.count);
-            
+
             // Scale enemy count based on difficulty
             var difficultySettings = BalanceManager.Instance.GetCurrentDifficultySettings();
             if (difficultySettings.encounterFrequency > 1.1f) // Hard difficulty
@@ -2030,7 +2204,7 @@ public class EncounterManager : MonoBehaviour
             {
                 count = Mathf.Max(1, Mathf.RoundToInt(count * 0.8f)); // 20% fewer enemies, minimum 1
             }
-            
+
             for (int i = 0; i < count; i++)
             {
                 var enemy = EnemyManager.Instance.SpawnEnemy(
@@ -2055,6 +2229,7 @@ public class EncounterManager : MonoBehaviour
 ### Difficulty Level Definitions
 
 **🟢 Easy Mode - "Apprentice":**
+
 - **Target Audience**: New RPG players, casual gamers
 - **Player Advantages**: +25% damage dealt, -20% enemy damage received
 - **Enemy Scaling**: -10% enemy health, -20% enemy damage
@@ -2063,6 +2238,7 @@ public class EncounterManager : MonoBehaviour
 - **Boss Fights**: Phase transitions at 70% and 35% health (gentler curve)
 
 **🟡 Normal Mode - "Adventurer":**
+
 - **Target Audience**: Standard RPG experience
 - **Balanced Gameplay**: All multipliers at 1.0 (baseline)
 - **Standard Progression**: Normal experience and loot rates
@@ -2070,6 +2246,7 @@ public class EncounterManager : MonoBehaviour
 - **Boss Fights**: Phase transitions at 65% and 30% health (intended design)
 
 **🔴 Hard Mode - "Legend":**
+
 - **Target Audience**: Experienced players seeking challenge
 - **Player Disadvantages**: -15% damage dealt, +30% enemy damage received
 - **Enemy Scaling**: +20% enemy health, +30% enemy damage
@@ -2088,37 +2265,37 @@ public class DifficultySelectionUI : MonoBehaviour
     [SerializeField] private Button normalButton;
     [SerializeField] private Button hardButton;
     [SerializeField] private TextMeshProUGUI descriptionText;
-    
+
     private void Start()
     {
         SetupDifficultyButtons();
         ShowDifficultyDescription(DifficultyLevel.Normal); // Default selection
     }
-    
+
     private void SetupDifficultyButtons()
     {
         easyButton.onClick.AddListener(() => SelectDifficulty(DifficultyLevel.Easy));
         normalButton.onClick.AddListener(() => SelectDifficulty(DifficultyLevel.Normal));
         hardButton.onClick.AddListener(() => SelectDifficulty(DifficultyLevel.Hard));
     }
-    
+
     private void SelectDifficulty(DifficultyLevel difficulty)
     {
         BalanceManager.Instance.SetDifficulty(difficulty);
         ShowDifficultyDescription(difficulty);
-        
+
         // Save difficulty preference
         PlayerPrefs.SetInt("SelectedDifficulty", (int)difficulty);
-        
+
         // Proceed to character creation
         GameManager.Instance.StartNewGame(difficulty);
     }
-    
+
     private void ShowDifficultyDescription(DifficultyLevel difficulty)
     {
         var settings = BalanceManager.Instance.GetDifficultySettings(difficulty);
         descriptionText.text = settings.description;
-        
+
         // Update visual indicators
         UpdateButtonHighlights(difficulty);
     }
@@ -2170,18 +2347,18 @@ public class CombatCalculator
     {
         // Base damage calculation
         int baseDamage = weapon.BaseDamage + attacker.GetAttributeModifier(AttributeType.Strength);
-        
+
         // Apply weapon type multiplier (includes difficulty scaling)
         float weaponMultiplier = BalanceManager.Instance.GetDamageMultiplier(weapon.Type);
         float finalDamage = baseDamage * weaponMultiplier;
-        
+
         // Apply enemy damage scaling if target is player
         if (target is Character playerCharacter)
         {
             var difficultySettings = BalanceManager.Instance.GetCurrentDifficultySettings();
             finalDamage *= difficultySettings.enemyDamageMultiplier;
         }
-        
+
         int armorReduction = target.GetArmorDefense();
         return Mathf.Max(1, Mathf.RoundToInt(finalDamage) - armorReduction);
     }
@@ -2189,6 +2366,7 @@ public class CombatCalculator
 ```
 
 This comprehensive difficulty system ensures that players of all skill levels can enjoy the Land of Mist RPG while providing meaningful choices that affect gameplay, progression, and challenge level throughout the entire experience.
+
 ```
 
 ### Suggested Enemy Roster
@@ -2240,6 +2418,106 @@ This comprehensive difficulty system ensures that players of all skill levels ca
    - Wraith (Level 6): Life drain and ethereal movement
    - Lich (Level 10): Powerful necromancer boss
    - Death Knight (Level 8): Fallen paladin with dark powers
+
+## Difficulty System Architecture
+
+### System-Wide Difficulty Impact
+
+```mermaid
+graph TB
+    subgraph "Difficulty Selection"
+        DS[Difficulty Selection]
+        EASY[🟢 Easy - Apprentice]
+        NORM[🟡 Normal - Adventurer]
+        HARD[🔴 Hard - Legend]
+    end
+
+    subgraph "Affected Systems"
+        subgraph "Combat System"
+            DMG[Damage Multipliers]
+            HP[Enemy Health]
+            ENC[Encounter Frequency]
+        end
+
+        subgraph "Progression System"
+            XP[Experience Rates]
+            LOOT[Loot Quality]
+            ATT[Attribute Growth]
+        end
+
+        subgraph "Game Features"
+            SAVE[Save Mechanics]
+            PERM[Permadeath]
+            BOSS[Boss Phases]
+        end
+
+        subgraph "UI Indicators"
+            IND[Difficulty Indicators]
+            WARN[Death Warnings]
+            PROG[Progress Tracking]
+        end
+    end
+
+    DS --> EASY
+    DS --> NORM
+    DS --> HARD
+
+    EASY --> DMG
+    EASY --> HP
+    EASY --> ENC
+    EASY --> XP
+    EASY --> LOOT
+    EASY --> SAVE
+
+    NORM --> DMG
+    NORM --> HP
+    NORM --> XP
+    NORM --> BOSS
+
+    HARD --> DMG
+    HARD --> HP
+    HARD --> ENC
+    HARD --> XP
+    HARD --> PERM
+    HARD --> BOSS
+
+    DMG --> IND
+    PERM --> WARN
+    XP --> PROG
+
+    style EASY fill:#c8e6c9
+    style NORM fill:#fff9c4
+    style HARD fill:#ffcdd2
+    style PERM fill:#f44336,color:#fff
+```
+
+### Difficulty Scaling Flow
+
+```mermaid
+sequenceDiagram
+    participant Player
+    participant DifficultyUI
+    participant BalanceManager
+    participant CombatSystem
+    participant EnemyManager
+    participant SaveSystem
+
+    Player->>DifficultyUI: Select Difficulty
+    DifficultyUI->>BalanceManager: SetDifficulty(level)
+    BalanceManager->>BalanceManager: LoadDifficultySettings()
+    
+    Note over BalanceManager: Store difficulty multipliers
+    
+    BalanceManager->>CombatSystem: ApplyDamageMultipliers()
+    BalanceManager->>EnemyManager: ApplyEnemyScaling()
+    BalanceManager->>SaveSystem: ConfigureDeathHandling()
+    
+    Note over SaveSystem: Enable/Disable Permadeath
+    
+    CombatSystem->>Player: Modified Combat Experience
+    EnemyManager->>Player: Scaled Enemy Encounters
+    SaveSystem->>Player: Difficulty-Appropriate Save Behavior
+```
 
 This architecture ensures the game follows SOLID principles while maintaining the flexibility to add new features and content through data-driven design, with comprehensive JSON-based balancing capabilities.
 

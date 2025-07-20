@@ -8,6 +8,45 @@ Define the fundamental gameplay systems that drive the Land of Mist RPG experien
 
 A text-based, turn-based RPG set in a Tolkien-inspired fantasy world featuring party-based combat, tactical decision-making, and character progression.
 
+### Core Game Loop
+
+```mermaid
+stateDiagram-v2
+    [*] --> CharacterCreation
+    CharacterCreation --> Exploration
+    
+    state Exploration {
+        [*] --> Movement
+        Movement --> RandomEncounter: Encounter Check
+        Movement --> Discovery: Find Location
+        Movement --> Rest: Party Needs Rest
+        
+        RandomEncounter --> Combat
+        Discovery --> Interaction
+        Rest --> Movement
+        
+        Combat --> Victory
+        Combat --> Defeat
+        Victory --> LootRewards
+        LootRewards --> Movement
+        
+        Defeat --> GameOver: All Dead (Hard Mode)
+        Defeat --> Respawn: Save System (Easy/Normal)
+        Respawn --> Movement
+        
+        Interaction --> QuestProgress
+        QuestProgress --> Movement
+    }
+    
+    Exploration --> CharacterProgression: Level Up
+    CharacterProgression --> Exploration
+    
+    Exploration --> GameCompletion: Final Quest
+    GameCompletion --> [*]
+    
+    GameOver --> [*]
+```
+
 ## Core Systems
 
 ### 1. Party System
@@ -22,6 +61,70 @@ A text-based, turn-based RPG set in a Tolkien-inspired fantasy world featuring p
 #### Design
 
 - **Party Composition**: 4 distinct character slots
+
+```mermaid
+graph TD
+    subgraph "Party Formation"
+        P[Party of 4]
+        W[Warrior - Tank]
+        R[Ranger - DPS/Utility]
+        M[Mage - Magic DPS]
+        C[Cleric - Healer/Support]
+    end
+
+    subgraph "Character Specializations"
+        subgraph "Warrior Focus"
+            WT[Tank Role]
+            WM[Melee Combat]
+            WD[High Defense]
+        end
+        
+        subgraph "Ranger Focus"
+            RT[Ranged DPS]
+            RS[Stealth & Utility]
+            RN[Nature Skills]
+        end
+        
+        subgraph "Mage Focus"
+            MM[Elemental Magic]
+            MS[Spell Casting]
+            MC[Crowd Control]
+        end
+        
+        subgraph "Cleric Focus"
+            CH[Healing Magic]
+            CS[Support Buffs]
+            CD[Divine Protection]
+        end
+    end
+
+    P --> W
+    P --> R
+    P --> M
+    P --> C
+
+    W --> WT
+    W --> WM
+    W --> WD
+    
+    R --> RT
+    R --> RS
+    R --> RN
+    
+    M --> MM
+    M --> MS
+    M --> MC
+    
+    C --> CH
+    C --> CS
+    C --> CD
+
+    style W fill:#ffcdd2
+    style R fill:#c8e6c9
+    style M fill:#e1bee7
+    style C fill:#fff9c4
+```
+
 - **Character Classes**:
   - **Warrior**:
     - Melee combat specialist, high defense
@@ -200,6 +303,75 @@ A text-based, turn-based RPG set in a Tolkien-inspired fantasy world featuring p
     - Earthquake: Area damage with chance to stun and knock prone
     - Entangle: Root enemies in place, prevent movement and actions
     - Boulder Throw: Long-range single target damage, ignores some armor
+
+```mermaid
+graph TB
+    subgraph "Magic School System"
+        MS[Magic Schools]
+        
+        subgraph "🔥 Fire Magic - Destruction"
+            F[Fire School]
+            FB[Fireball<br/>Single Target High Damage]
+            FLB[Flame Burst<br/>Area Damage]
+            IW[Ignite Weapon<br/>Weapon Enchantment]
+        end
+        
+        subgraph "💧 Water Magic - Healing & Support"
+            W[Water School]
+            HS[Healing Spring<br/>Health Over Time]
+            TW[Tidal Wave<br/>Area Knockback]
+            PU[Purify<br/>Remove Status Effects]
+            MF[Mist Form<br/>Damage Reduction]
+        end
+        
+        subgraph "🌍 Earth Magic - Defense & Control"
+            E[Earth School]
+            SA[Stone Armor<br/>Defense Increase]
+            EQ[Earthquake<br/>Area Stun]
+            EN[Entangle<br/>Root Enemies]
+            BT[Boulder Throw<br/>Ranged Damage]
+        end
+        
+        subgraph "Mana System"
+            MP[Mana Points]
+            MR[Mana Regeneration]
+            MC[Mana Costs]
+            MI[Mana Items]
+        end
+    end
+
+    MS --> F
+    MS --> W
+    MS --> E
+    
+    F --> FB
+    F --> FLB
+    F --> IW
+    
+    W --> HS
+    W --> TW
+    W --> PU
+    W --> MF
+    
+    E --> SA
+    E --> EQ
+    E --> EN
+    E --> BT
+    
+    F -.-> MP
+    W -.-> MP
+    E -.-> MP
+    
+    MP --> MR
+    MP --> MC
+    MP --> MI
+
+    style F fill:#ffcdd2
+    style W fill:#bbdefb
+    style E fill:#c8e6c9
+    style MP fill:#fff9c4
+```
+
 - **Mana System**:
   - Each character has Mana Points (MP)
   - Spells consume MP based on power level
