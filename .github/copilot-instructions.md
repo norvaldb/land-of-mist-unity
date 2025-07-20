@@ -1,27 +1,97 @@
-# Unity Game Development - AI Coding Agent Instructions
+# Land of Mist RPG - Unity Development Instructions
 
 <!-- Use this file to provide workspace-specific custom instructions to Copilot. For more details, visit https://code.visualstudio.com/docs/copilot/copilot-customization#_use-a-githubcopilotinstructionsmd-file -->
 
+## Land of Mist RPG Project Overview
+
+**Game Type:** Text-based turn-based RPG with party management
+**Target Platform:** Unity 6.1 LTS, cross-platform (PC primary, mobile secondary)
+**Repository:** https://github.com/norvaldb/land-of-mist-unity
+**Development Phase:** Phase 1A - Core Systems Implementation
+
+### Project-Specific Context
+
+**Core Game Features:**
+- **Party System**: 4-character party (Theron-Warrior, Sylvain-Ranger, Valdris-Mage, Caelum-Cleric)
+- **Magic Schools**: Fire, Water, Earth magic systems with spell progression
+- **Equipment System**: Weapons, armor, shields with poison enhancement capabilities
+- **Currency System**: Three-tier currency (Copper/Silver/Gold) with automatic conversion
+- **JSON Configuration**: All game balancing through JSON files for rapid iteration
+- **Difficulty Levels**: Easy/Normal/Hard with comprehensive stat scaling
+- **Enemy System**: JSON-configurable adversaries with abilities and behaviors
+- **Save System**: File-based storage using Unity JsonUtility with compression
+
+**Critical Dependencies:**
+- **Unity 6.1**: MonoBehaviour, ScriptableObject, JsonUtility, Event System
+- **System.IO.Abstractions**: For testable file operations and mocking
+- **Standard .NET**: Collections, LINQ, IO for core functionality
+- **StreamingAssets**: JSON configuration files for game balancing
+
+**Architecture Decisions:**
+- **No Database**: File-based storage sufficient for ~2K data points (~100KB total)
+- **Event-Driven**: Loose coupling between systems through custom event system
+- **ScriptableObject Data**: All game data (characters, equipment, spells) as assets
+- **JSON Balancing**: External configuration for all numeric parameters
+- **SOLID Compliance**: Strict adherence to SOLID principles throughout codebase
+
+### Current Implementation Status
+
+**Completed:**
+- ✅ Project structure and documentation
+- ✅ Technical architecture with Mermaid diagrams
+- ✅ Comprehensive game design documentation
+- ✅ JSON balance system design
+- ✅ Enemy system architecture
+- ✅ Difficulty scaling system
+
+**Phase 1A - Current Focus:**
+- 🔄 Core ScriptableObject data structures
+- 🔄 BalanceManager implementation with JSON loading
+- 🔄 Basic character system (Theron, Sylvain, Valdris, Caelum)
+- 🔄 Equipment system with poison enhancement
+- 🔄 Save/Load system with System.IO.Abstractions
+
+**Key Files to Reference:**
+- `Planning/Technical/system-architecture.md` - Complete technical specification
+- `Planning/GameDesign/core-mechanics.md` - Game design and character details
+- `StreamingAssets/GameBalance/GameConfig.json` - Balance configuration (to be created)
+- `StreamingAssets/Enemies/EnemyDatabase.json` - Enemy definitions (to be created)
+
 ## Project Architecture Philosophy
 
-This document captures **universal development lessons** learned from the Land of Mist RPG project, adapted for **Unity game development**. Focus on architectural patterns, testing strategies, and development workflows that ensure maintainable, scalable game projects.
+This document captures **project-specific development requirements** for the Land of Mist RPG, building on universal Unity development patterns. Focus on implementing the specific architecture defined in our technical documentation while maintaining clean, testable, and scalable code.
 
 ### Core Architectural Principles
 
 **Clean Architecture Pattern**: Organize Unity projects with clear separation of concerns across layers:
 ```
-Unity Project Structure:
-├── Scripts/
-│   ├── Core/                    # Game domain logic (entities, game rules)
-│   ├── Systems/                 # Game systems (singleton MonoBehaviours)
-│   ├── UI/                      # User interface components and controllers
-│   ├── Data/                    # Data persistence and serialization
-│   └── Utils/                   # Utility classes and extensions
-├── Prefabs/                     # Reusable game objects
-├── Scenes/                      # Game scenes
-├── Resources/                   # Runtime-loaded assets
-├── StreamingAssets/             # Platform-specific assets
-└── Editor/                      # Custom editor tools
+Land of Mist Unity Project Structure:
+├── Assets/
+│   ├── Scripts/
+│   │   ├── Core/                # Game domain logic (Character, Equipment, Spell classes)
+│   │   ├── Systems/             # Game systems (GameManager, BalanceManager, EnemyManager)
+│   │   ├── Combat/              # Combat mechanics and turn-based logic
+│   │   ├── UI/                  # Text-based UI components and menus
+│   │   ├── Data/                # Save/Load system and data persistence
+│   │   └── Utils/               # Utility classes and extensions
+│   ├── ScriptableObjects/       # Data assets (Characters, Equipment, Spells, Enemies)
+│   │   ├── Characters/          # Theron, Sylvain, Valdris, Caelum data
+│   │   ├── Equipment/           # Weapons, armor, shields with poison capabilities
+│   │   ├── Spells/              # Fire, Water, Earth magic school spells
+│   │   └── Enemies/             # Enemy templates and boss configurations
+│   ├── Prefabs/                 # UI prefabs and game object templates
+│   ├── Scenes/                  # Game scenes (MainMenu, GameWorld, Combat)
+│   └── Materials/               # UI materials and visual assets
+├── StreamingAssets/             # JSON configuration files
+│   ├── GameBalance/             # GameConfig.json for balance parameters
+│   └── Enemies/                 # EnemyDatabase.json for enemy definitions
+├── Planning/                    # Documentation and design specifications
+│   ├── Technical/               # system-architecture.md (primary reference)
+│   ├── GameDesign/              # core-mechanics.md, narrative-design.md
+│   └── Production/              # development-roadmap.md
+└── Tests/                       # Unit and integration tests
+    ├── EditMode/                # Logic tests (balance, calculations)
+    └── PlayMode/                # Integration tests (combat, save/load)
 ```
 
 ## SOLID Principles Implementation
@@ -42,14 +112,14 @@ Unity Project Structure:
 - **Component-Based Design**: Extend GameObject behavior through composition
 
 ### L - Liskov Substitution Principle
-- **Interface Contracts**: All implementations of `IWeapon`, `IEnemy`, `IUI` must be interchangeable
-- **Polymorphic Behavior**: Combat system works with any `IWeapon` implementation
+- **Interface Contracts**: All implementations of `IWeapon`, `IEnemy`, `ISpell` must be interchangeable
+- **Polymorphic Behavior**: Combat system works with any `IWeapon` implementation (sword, bow, staff)
 - **Consistent Contracts**: All result types follow the same success/failure pattern
 
 ### I - Interface Segregation Principle
-- **Focused Interfaces**: `IMovable`, `IDamageable`, `IInteractable` with specific purposes
-- **UI Contracts**: Separate interfaces for different UI concerns
-- **System Interfaces**: Each system exposes only necessary methods
+- **Focused Interfaces**: `ICombatant`, `IDamageable`, `IEquippable` with specific purposes
+- **UI Contracts**: Separate interfaces for `IGameMenu`, `ICombatUI`, `IInventoryUI`
+- **System Interfaces**: Each system exposes only necessary methods (`IBalanceProvider`, `ISaveSystem`)
 
 ### D - Dependency Inversion Principle
 - **ScriptableObject Dependencies**: Systems depend on data assets, not hardcoded values
@@ -89,13 +159,20 @@ public class CombatSystemTests
     public void ShouldCalculateDamageCorrectly()
     {
         // Unit test logic without MonoBehaviour dependencies
+        var weapon = ScriptableObject.CreateInstance<WeaponData>();
+        weapon.baseDamage = 10;
+        var result = CombatCalculator.CalculateDamage(weapon, 15); // strength 15
+        Assert.AreEqual(12, result); // 10 base + 2 strength bonus
     }
-    
+
     [UnityTest]
-    public IEnumerator ShouldHandlePlayerDeathSequence()
+    public IEnumerator ShouldHandleCharacterLevelUp()
     {
         // Integration test with Unity components
+        var character = CreateTestCharacter();
+        character.GainExperience(100);
         yield return null;
+        Assert.AreEqual(2, character.Level);
     }
 }
 ```
@@ -121,26 +198,28 @@ public class CombatSystemTests
 // Event system for loose coupling
 public class GameEventManager : MonoBehaviour
 {
-    public static event System.Action<int> OnPlayerHealthChanged;
-    public static event System.Action<string> OnGameStateChanged;
-    
-    public static void TriggerHealthChange(int newHealth)
+    public static event System.Action<Character> OnCharacterHealthChanged;
+    public static event System.Action<GameState> OnGameStateChanged;
+    public static event System.Action<CombatResult> OnCombatEnded;
+    public static event System.Action<DifficultyLevel> OnDifficultyChanged;
+
+    public static void TriggerHealthChange(Character character)
     {
-        OnPlayerHealthChanged?.Invoke(newHealth);
+        OnCharacterHealthChanged?.Invoke(character);
     }
 }
 
 // Systems subscribe to events, not direct references
-public class UIHealthBar : MonoBehaviour
+public class UIPartyPanel : MonoBehaviour
 {
     void OnEnable()
     {
-        GameEventManager.OnPlayerHealthChanged += UpdateHealthBar;
+        GameEventManager.OnCharacterHealthChanged += UpdateCharacterDisplay;
     }
-    
+
     void OnDisable()
     {
-        GameEventManager.OnPlayerHealthChanged -= UpdateHealthBar;
+        GameEventManager.OnCharacterHealthChanged -= UpdateCharacterDisplay;
     }
 }
 ```
@@ -149,14 +228,25 @@ public class UIHealthBar : MonoBehaviour
 **Use ScriptableObjects for game balance and configuration:**
 
 ```csharp
-[CreateAssetMenu(fileName = "New Enemy", menuName = "Game/Enemy Data")]
-public class EnemyData : ScriptableObject
+[CreateAssetMenu(fileName = "New Character", menuName = "Land of Mist/Character")]
+public class CharacterData : ScriptableObject
 {
-    public string enemyName;
-    public int health;
-    public int damage;
-    public float speed;
-    // Data-driven approach allows balance changes without code changes
+    public string characterName;
+    public CharacterClass characterClass;
+    public AttributeData baseAttributes;
+    public EquipmentData startingEquipment;
+    // Data-driven approach allows character changes without code changes
+}
+
+[CreateAssetMenu(fileName = "New Weapon", menuName = "Land of Mist/Weapon")]
+public class WeaponData : ScriptableObject, IWeapon
+{
+    public WeaponType weaponType;
+    public int baseDamage;
+    public float criticalChance;
+    public bool canBeEnhanced;
+    public PoisonType supportedPoisons;
+    // Equipment configured through data assets
 }
 ```
 
@@ -169,12 +259,12 @@ public class GameResult<T>
     public bool Success { get; private set; }
     public T Data { get; private set; }
     public string ErrorMessage { get; private set; }
-    
+
     public static GameResult<T> Success(T data)
     {
         return new GameResult<T> { Success = true, Data = data };
     }
-    
+
     public static GameResult<T> Failure(string error)
     {
         return new GameResult<T> { Success = false, ErrorMessage = error };
@@ -186,7 +276,7 @@ public GameResult<bool> AttemptPurchase(Item item, int playerGold)
 {
     if (playerGold < item.cost)
         return GameResult<bool>.Failure("Insufficient gold");
-    
+
     return GameResult<bool>.Success(true);
 }
 ```
@@ -312,9 +402,9 @@ public class GameLogger : MonoBehaviour
         string logMessage = $"[{system}] {message}";
         if (ex != null)
             logMessage += $"\nException: {ex.Message}\nStack: {ex.StackTrace}";
-        
+
         Debug.LogError(logMessage);
-        
+
         // Optional: Send to analytics/crash reporting
         // AnalyticsSystem.LogError(system, message, ex);
     }
