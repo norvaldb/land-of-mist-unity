@@ -285,7 +285,7 @@ For this text-based RPG with limited data volume (~2,000 data points maximum), a
 ```text
 Static Data (ScriptableObjects):
 - Character classes: ~20 assets × 500 bytes = 10KB
-- Equipment definitions: ~100 items × 200 bytes = 20KB  
+- Equipment definitions: ~100 items × 200 bytes = 20KB
 - Spell data: ~50 spells × 300 bytes = 15KB
 - Balance config: ~5KB JSON file
 Total Static: ~50KB
@@ -342,33 +342,33 @@ public class SaveManager : MonoBehaviour
 {
     private static readonly string SAVE_DIRECTORY = "GameSaves";
     private static readonly string BACKUP_DIRECTORY = "GameSaves/Backups";
-    
+
     public void SaveGame(int slotNumber)
     {
         var saveData = CollectSaveData();
-        
+
         // Primary save
         string savePath = GetSaveFilePath(slotNumber);
         string json = JsonUtility.ToJson(saveData, prettyPrint: true);
-        
+
         // Create backup before overwriting
         CreateBackup(slotNumber);
-        
+
         // Write with compression
         byte[] compressed = Compress(json);
         File.WriteAllBytes(savePath, compressed);
-        
+
         // Verify save integrity
         ValidateSaveFile(savePath);
     }
-    
+
     public SaveData LoadGame(int slotNumber)
     {
         string savePath = GetSaveFilePath(slotNumber);
-        
+
         if (!File.Exists(savePath))
             return null;
-            
+
         try
         {
             byte[] compressed = File.ReadAllBytes(savePath);
@@ -447,7 +447,7 @@ public interface IDataStorage
 // Current implementation
 public class FileDataStorage : IDataStorage { }
 
-// Future database implementation  
+// Future database implementation
 public class DatabaseStorage : IDataStorage { }
 ```
 
@@ -709,6 +709,44 @@ public class CurrencySystemTests
       "staffBonus": 1.5,
       "restMultiplier": 3.0
     }
+  },
+  "difficulty": {
+    "easy": {
+      "playerDamageMultiplier": 1.25,
+      "enemyDamageMultiplier": 0.8,
+      "enemyHealthMultiplier": 0.9,
+      "experienceMultiplier": 1.2,
+      "lootMultiplier": 1.1,
+      "encounterFrequency": 0.8,
+      "bossPhaseThresholds": [70, 35],
+      "saveOnDeath": true,
+      "permadeath": false,
+      "description": "Recommended for new players. Increased damage dealt, reduced enemy strength, more experience and loot."
+    },
+    "normal": {
+      "playerDamageMultiplier": 1.0,
+      "enemyDamageMultiplier": 1.0,
+      "enemyHealthMultiplier": 1.0,
+      "experienceMultiplier": 1.0,
+      "lootMultiplier": 1.0,
+      "encounterFrequency": 1.0,
+      "bossPhaseThresholds": [65, 30],
+      "saveOnDeath": true,
+      "permadeath": false,
+      "description": "Balanced experience as intended by the designers. Standard combat and progression."
+    },
+    "hard": {
+      "playerDamageMultiplier": 0.85,
+      "enemyDamageMultiplier": 1.3,
+      "enemyHealthMultiplier": 1.2,
+      "experienceMultiplier": 0.9,
+      "lootMultiplier": 0.95,
+      "encounterFrequency": 1.3,
+      "bossPhaseThresholds": [60, 25],
+      "saveOnDeath": false,
+      "permadeath": true,
+      "description": "For experienced players seeking challenge. Reduced player effectiveness, stronger enemies, permadeath."
+    }
   }
 }
 ```
@@ -727,6 +765,30 @@ public class GameBalanceConfig
     public ProgressionConfig progression;
     public EconomyConfig economy;
     public MagicConfig magic;
+    public DifficultyConfig difficulty;
+}
+
+[System.Serializable]
+public class DifficultyConfig
+{
+    public DifficultySettings easy;
+    public DifficultySettings normal;
+    public DifficultySettings hard;
+}
+
+[System.Serializable]
+public class DifficultySettings
+{
+    public float playerDamageMultiplier;
+    public float enemyDamageMultiplier;
+    public float enemyHealthMultiplier;
+    public float experienceMultiplier;
+    public float lootMultiplier;
+    public float encounterFrequency;
+    public int[] bossPhaseThresholds;
+    public bool saveOnDeath;
+    public bool permadeath;
+    public string description;
 }
 
 public class BalanceManager : MonoBehaviour
@@ -734,6 +796,7 @@ public class BalanceManager : MonoBehaviour
     public static BalanceManager Instance { get; private set; }
 
     [SerializeField] private GameBalanceConfig config;
+    [SerializeField] private DifficultyLevel currentDifficulty = DifficultyLevel.Normal;
 
     private void Awake()
     {
@@ -757,21 +820,45 @@ public class BalanceManager : MonoBehaviour
         }
     }
 
+    public void SetDifficulty(DifficultyLevel difficulty)
+    {
+        currentDifficulty = difficulty;
+        GameEvents.OnDifficultyChanged?.Invoke(difficulty);
+    }
+
+    public DifficultySettings GetCurrentDifficultySettings()
+    {
+        return currentDifficulty switch
+        {
+            DifficultyLevel.Easy => config.difficulty.easy,
+            DifficultyLevel.Normal => config.difficulty.normal,
+            DifficultyLevel.Hard => config.difficulty.hard,
+            _ => config.difficulty.normal
+        };
+    }
+
     public float GetDamageMultiplier(WeaponType weaponType)
     {
-        return weaponType switch
+        float baseMultiplier = weaponType switch
         {
             WeaponType.OneHanded => config.combat.damageMultipliers.oneHandedWeapons,
             WeaponType.TwoHanded => config.combat.damageMultipliers.twoHandedWeapons,
             WeaponType.Ranged => config.combat.damageMultipliers.rangedWeapons,
             _ => 1.0f
         };
+        
+        // Apply difficulty modifier
+        return baseMultiplier * GetCurrentDifficultySettings().playerDamageMultiplier;
     }
 
     public int GetExperienceRequired(int level)
     {
         if (level > 0 && level <= config.progression.experienceTable.Length)
-            return config.progression.experienceTable[level - 1];
+        {
+            int baseXP = config.progression.experienceTable[level - 1];
+            // Apply difficulty modifier (easier = less XP needed, harder = more XP needed)
+            return Mathf.RoundToInt(baseXP / GetCurrentDifficultySettings().experienceMultiplier);
+        }
         return int.MaxValue;
     }
 
@@ -780,6 +867,34 @@ public class BalanceManager : MonoBehaviour
         // Dynamic price lookup from JSON configuration
         return config.economy.shopPrices.GetPrice(category, itemName);
     }
+
+    public float GetEnemyStatMultiplier(EnemyStatType statType)
+    {
+        var difficultySettings = GetCurrentDifficultySettings();
+        return statType switch
+        {
+            EnemyStatType.Health => difficultySettings.enemyHealthMultiplier,
+            EnemyStatType.Damage => difficultySettings.enemyDamageMultiplier,
+            EnemyStatType.Experience => difficultySettings.experienceMultiplier,
+            EnemyStatType.Loot => difficultySettings.lootMultiplier,
+            _ => 1.0f
+        };
+    }
+}
+
+public enum DifficultyLevel
+{
+    Easy,
+    Normal,
+    Hard
+}
+
+public enum EnemyStatType
+{
+    Health,
+    Damage,
+    Experience,
+    Loot
 }
 ```
 
@@ -1542,7 +1657,7 @@ public class EnemyData
     public string category;
     public string subtype;
     public int level;
-    
+
     public AttributeData attributes;
     public CombatData combat;
     public EquipmentData equipment;
@@ -1576,20 +1691,20 @@ public class BehaviorData
 public class EnemyManager : MonoBehaviour
 {
     public static EnemyManager Instance { get; private set; }
-    
+
     [SerializeField] private Dictionary<string, EnemyData> enemyDatabase;
     [SerializeField] private List<GameObject> activeEnemies;
-    
+
     private void Awake()
     {
         Instance = this;
         LoadEnemyDatabase();
     }
-    
+
     private void LoadEnemyDatabase()
     {
         string dbPath = Path.Combine(Application.streamingAssetsPath, "Enemies", "EnemyDatabase.json");
-        
+
         if (File.Exists(dbPath))
         {
             string json = File.ReadAllText(dbPath);
@@ -1601,7 +1716,7 @@ public class EnemyManager : MonoBehaviour
             Debug.LogError("Enemy database not found!");
         }
     }
-    
+
     public GameObject SpawnEnemy(string enemyId, Vector3 position)
     {
         if (!enemyDatabase.ContainsKey(enemyId))
@@ -1609,23 +1724,52 @@ public class EnemyManager : MonoBehaviour
             Debug.LogError($"Enemy {enemyId} not found in database!");
             return null;
         }
-        
+
         var enemyData = enemyDatabase[enemyId];
-        var enemyGO = CreateEnemyFromData(enemyData);
+        var scaledEnemyData = ApplyDifficultyScaling(enemyData);
+        var enemyGO = CreateEnemyFromData(scaledEnemyData);
         enemyGO.transform.position = position;
-        
+
         activeEnemies.Add(enemyGO);
         return enemyGO;
     }
-    
+
+    private EnemyData ApplyDifficultyScaling(EnemyData baseData)
+    {
+        var scaledData = baseData.Clone();
+        var difficultySettings = BalanceManager.Instance.GetCurrentDifficultySettings();
+
+        // Scale health
+        scaledData.combat.health = Mathf.RoundToInt(
+            scaledData.combat.health * difficultySettings.enemyHealthMultiplier
+        );
+
+        // Scale damage output (applies to all enemy attacks)
+        scaledData.combat.baseDamageMultiplier = difficultySettings.enemyDamageMultiplier;
+
+        // Scale experience reward
+        scaledData.experienceReward = Mathf.RoundToInt(
+            scaledData.experienceReward * difficultySettings.experienceMultiplier
+        );
+
+        // Scale loot chances and amounts
+        foreach (var lootItem in scaledData.loot.possible)
+        {
+            lootItem.chance *= difficultySettings.lootMultiplier;
+            lootItem.chance = Mathf.Clamp01(lootItem.chance); // Keep within 0-1 range
+        }
+
+        return scaledData;
+    }
+
     private GameObject CreateEnemyFromData(EnemyData data)
     {
         var enemyGO = new GameObject(data.name);
         var enemy = enemyGO.AddComponent<Enemy>();
-        
-        // Initialize enemy with data
+
+        // Initialize enemy with difficulty-scaled data
         enemy.Initialize(data);
-        
+
         return enemyGO;
     }
 }
@@ -1639,7 +1783,7 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] private EnemyData enemyData;
     [SerializeField] private Enemy enemy;
     [SerializeField] private float decisionDelay = 1f;
-    
+
     public CombatAction ChooseAction()
     {
         return enemyData.behavior.tacticalIntelligence switch
@@ -1651,32 +1795,32 @@ public class EnemyAI : MonoBehaviour
             _ => ChooseMinimalAction()
         };
     }
-    
+
     private CombatAction ChooseMinimalAction()
     {
         // Simple: Always attack nearest enemy
         var target = FindNearestTarget();
         return new AttackAction(target);
     }
-    
+
     private CombatAction ChooseLowIntelligenceAction()
     {
         // Basic tactics: Use abilities if available, otherwise attack
         var availableAbilities = GetAvailableAbilities();
-        
+
         if (availableAbilities.Count > 0 && Random.value < 0.3f)
         {
             var ability = availableAbilities[Random.Range(0, availableAbilities.Count)];
             return new AbilityAction(ability, SelectTargetForAbility(ability));
         }
-        
+
         return new AttackAction(FindNearestTarget());
     }
-    
+
     private CombatAction ChooseMediumIntelligenceAction()
     {
         // Tactical: Consider health, positioning, and ability synergies
-        
+
         // Prioritize healing if health is low
         if (enemy.HealthPercent < 0.3f)
         {
@@ -1684,25 +1828,25 @@ public class EnemyAI : MonoBehaviour
             if (healingAbility != null)
                 return new AbilityAction(healingAbility, enemy);
         }
-        
+
         // Use area abilities when multiple targets are clustered
         var areaAbility = FindAreaAbility();
         if (areaAbility != null && CountTargetsInRange(areaAbility) >= 2)
         {
             return new AbilityAction(areaAbility, FindOptimalAreaTarget(areaAbility));
         }
-        
+
         // Default to attacking weakest target
         return new AttackAction(FindWeakestTarget());
     }
-    
+
     private CombatAction ChooseHighIntelligenceAction()
     {
         // Advanced tactics: Multi-turn planning, counter-strategies
-        
+
         // Analyze party composition and adjust strategy
         var partyAnalysis = AnalyzeEnemyParty();
-        
+
         // Counter specific threats (e.g., prioritize mages)
         if (partyAnalysis.HasDangerousMage)
         {
@@ -1710,7 +1854,7 @@ public class EnemyAI : MonoBehaviour
             if (mage != null)
                 return new AttackAction(mage);
         }
-        
+
         // Use support abilities to buff allies
         if (HasAlliesNearby() && Random.value < 0.4f)
         {
@@ -1718,7 +1862,7 @@ public class EnemyAI : MonoBehaviour
             if (supportAbility != null)
                 return new AbilityAction(supportAbility, FindBestAllyTarget());
         }
-        
+
         // Fallback to medium intelligence behavior
         return ChooseMediumIntelligenceAction();
     }
@@ -1794,49 +1938,257 @@ public class EncounterManager : MonoBehaviour
 {
     [SerializeField] private EncounterTable encounterTable;
     [SerializeField] private string currentRegion = "darkForest";
-    
+    [SerializeField] private float baseEncounterChance = 0.15f; // 15% chance per movement
+    [SerializeField] private float distanceSinceLastEncounter = 0f;
+
+    public bool ShouldTriggerEncounter()
+    {
+        var difficultySettings = BalanceManager.Instance.GetCurrentDifficultySettings();
+        float adjustedChance = baseEncounterChance * difficultySettings.encounterFrequency;
+        
+        // Increase chance based on distance traveled without encounter
+        float scaledChance = adjustedChance + (distanceSinceLastEncounter * 0.02f);
+        
+        bool shouldTrigger = Random.value < scaledChance;
+        
+        if (shouldTrigger)
+        {
+            distanceSinceLastEncounter = 0f;
+        }
+        else
+        {
+            distanceSinceLastEncounter += 1f;
+        }
+        
+        return shouldTrigger;
+    }
+
     public Encounter GenerateRandomEncounter()
     {
         var regionEncounters = encounterTable.encountersByRegion[currentRegion];
-        
-        // Determine encounter type based on rarity
+        var difficultySettings = BalanceManager.Instance.GetCurrentDifficultySettings();
+
+        // Adjust encounter type probabilities based on difficulty
         var roll = Random.Range(0f, 100f);
-        var encounterType = roll switch
-        {
-            < 75f => "common",
-            < 95f => "rare",
-            _ => "boss"
-        };
+        string encounterType;
         
+        if (BalanceManager.Instance.currentDifficulty == DifficultyLevel.Easy)
+        {
+            // Easy: More common encounters, fewer bosses
+            encounterType = roll switch
+            {
+                < 85f => "common",
+                < 98f => "rare",
+                _ => "boss"
+            };
+        }
+        else if (BalanceManager.Instance.currentDifficulty == DifficultyLevel.Hard)
+        {
+            // Hard: More challenging encounters, more bosses
+            encounterType = roll switch
+            {
+                < 65f => "common",
+                < 90f => "rare",
+                _ => "boss"
+            };
+        }
+        else
+        {
+            // Normal: Balanced distribution
+            encounterType = roll switch
+            {
+                < 75f => "common",
+                < 95f => "rare",
+                _ => "boss"
+            };
+        }
+
         var possibleEncounters = regionEncounters[encounterType];
         var selectedEncounter = WeightedRandom.Choose(possibleEncounters);
-        
+
         return CreateEncounter(selectedEncounter);
     }
-    
+
     private Encounter CreateEncounter(EncounterData data)
     {
         var encounter = new Encounter();
         encounter.name = data.name;
         encounter.environment = data.environment;
         encounter.difficulty = data.difficulty;
-        
+
         foreach (var enemyGroup in data.enemies)
         {
             int count = DiceRoller.Roll(enemyGroup.count);
+            
+            // Scale enemy count based on difficulty
+            var difficultySettings = BalanceManager.Instance.GetCurrentDifficultySettings();
+            if (difficultySettings.encounterFrequency > 1.1f) // Hard difficulty
+            {
+                count = Mathf.RoundToInt(count * 1.2f); // 20% more enemies
+            }
+            else if (difficultySettings.encounterFrequency < 0.9f) // Easy difficulty
+            {
+                count = Mathf.Max(1, Mathf.RoundToInt(count * 0.8f)); // 20% fewer enemies, minimum 1
+            }
+            
             for (int i = 0; i < count; i++)
             {
                 var enemy = EnemyManager.Instance.SpawnEnemy(
-                    enemyGroup.id, 
+                    enemyGroup.id,
                     GetSpawnPosition()
                 );
                 encounter.enemies.Add(enemy);
             }
         }
-        
+
         return encounter;
     }
 }
+```
+
+## Difficulty System Architecture
+
+### Three-Tier Difficulty Design
+
+**Purpose:** Provide accessible gameplay for all skill levels while maintaining engaging challenges for experienced players.
+
+### Difficulty Level Definitions
+
+**🟢 Easy Mode - "Apprentice":**
+- **Target Audience**: New RPG players, casual gamers
+- **Player Advantages**: +25% damage dealt, -20% enemy damage received
+- **Enemy Scaling**: -10% enemy health, -20% enemy damage
+- **Progression**: +20% experience gain, +10% loot quality
+- **Quality of Life**: Save on death, no permadeath, reduced encounter frequency
+- **Boss Fights**: Phase transitions at 70% and 35% health (gentler curve)
+
+**🟡 Normal Mode - "Adventurer":**
+- **Target Audience**: Standard RPG experience
+- **Balanced Gameplay**: All multipliers at 1.0 (baseline)
+- **Standard Progression**: Normal experience and loot rates
+- **Classic Features**: Save on death, no permadeath
+- **Boss Fights**: Phase transitions at 65% and 30% health (intended design)
+
+**🔴 Hard Mode - "Legend":**
+- **Target Audience**: Experienced players seeking challenge
+- **Player Disadvantages**: -15% damage dealt, +30% enemy damage received
+- **Enemy Scaling**: +20% enemy health, +30% enemy damage
+- **Progression**: -10% experience gain, -5% loot quality
+- **Hardcore Features**: No save on death, permadeath enabled, +30% encounter frequency
+- **Boss Fights**: Phase transitions at 60% and 25% health (aggressive phases)
+
+### Difficulty Selection System
+
+**Game Start Implementation:**
+
+```csharp
+public class DifficultySelectionUI : MonoBehaviour
+{
+    [SerializeField] private Button easyButton;
+    [SerializeField] private Button normalButton;
+    [SerializeField] private Button hardButton;
+    [SerializeField] private TextMeshProUGUI descriptionText;
+    
+    private void Start()
+    {
+        SetupDifficultyButtons();
+        ShowDifficultyDescription(DifficultyLevel.Normal); // Default selection
+    }
+    
+    private void SetupDifficultyButtons()
+    {
+        easyButton.onClick.AddListener(() => SelectDifficulty(DifficultyLevel.Easy));
+        normalButton.onClick.AddListener(() => SelectDifficulty(DifficultyLevel.Normal));
+        hardButton.onClick.AddListener(() => SelectDifficulty(DifficultyLevel.Hard));
+    }
+    
+    private void SelectDifficulty(DifficultyLevel difficulty)
+    {
+        BalanceManager.Instance.SetDifficulty(difficulty);
+        ShowDifficultyDescription(difficulty);
+        
+        // Save difficulty preference
+        PlayerPrefs.SetInt("SelectedDifficulty", (int)difficulty);
+        
+        // Proceed to character creation
+        GameManager.Instance.StartNewGame(difficulty);
+    }
+    
+    private void ShowDifficultyDescription(DifficultyLevel difficulty)
+    {
+        var settings = BalanceManager.Instance.GetDifficultySettings(difficulty);
+        descriptionText.text = settings.description;
+        
+        // Update visual indicators
+        UpdateButtonHighlights(difficulty);
+    }
+}
+```
+
+### Save System Integration
+
+**Updated Save Data Structure:**
+
+```csharp
+[System.Serializable]
+public class SaveData
+{
+    public string version = "1.0.0";
+    public DateTime saveDate;
+    public DifficultyLevel selectedDifficulty;
+    public bool permadeathEnabled;
+    public GameProgress gameProgress;
+    public PartyData partyData;
+    public Currency playerCurrency;
+    public InventoryData inventory;
+    public Dictionary<string, bool> gameFlags;
+    public Dictionary<string, int> questProgress;
+    public SceneTransitionData currentLocation;
+    public DifficultyProgressTracking difficultyStats;
+}
+
+[System.Serializable]
+public class DifficultyProgressTracking
+{
+    public int combatsWon;
+    public int combatsLost;
+    public int charactersLost; // For permadeath tracking
+    public float totalPlayTime;
+    public int bossesDefeated;
+    public bool hasChangedDifficulty; // Prevents achievements on difficulty switching
+}
+```
+
+### Combat Integration
+
+**Damage Calculation with Difficulty:**
+
+```csharp
+public class CombatCalculator
+{
+    public static int CalculateDamage(ICombatant attacker, ICombatant target, IWeapon weapon)
+    {
+        // Base damage calculation
+        int baseDamage = weapon.BaseDamage + attacker.GetAttributeModifier(AttributeType.Strength);
+        
+        // Apply weapon type multiplier (includes difficulty scaling)
+        float weaponMultiplier = BalanceManager.Instance.GetDamageMultiplier(weapon.Type);
+        float finalDamage = baseDamage * weaponMultiplier;
+        
+        // Apply enemy damage scaling if target is player
+        if (target is Character playerCharacter)
+        {
+            var difficultySettings = BalanceManager.Instance.GetCurrentDifficultySettings();
+            finalDamage *= difficultySettings.enemyDamageMultiplier;
+        }
+        
+        int armorReduction = target.GetArmorDefense();
+        return Mathf.Max(1, Mathf.RoundToInt(finalDamage) - armorReduction);
+    }
+}
+```
+
+This comprehensive difficulty system ensures that players of all skill levels can enjoy the Land of Mist RPG while providing meaningful choices that affect gameplay, progression, and challenge level throughout the entire experience.
 ```
 
 ### Suggested Enemy Roster
@@ -1890,6 +2242,7 @@ public class EncounterManager : MonoBehaviour
    - Death Knight (Level 8): Fallen paladin with dark powers
 
 This architecture ensures the game follows SOLID principles while maintaining the flexibility to add new features and content through data-driven design, with comprehensive JSON-based balancing capabilities.
+
 ```
 
 This architecture ensures the game follows SOLID principles while maintaining the flexibility to add new features and content through data-driven design, with comprehensive JSON-based balancing capabilities.

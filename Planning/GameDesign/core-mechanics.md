@@ -247,6 +247,65 @@ A text-based, turn-based RPG set in a Tolkien-inspired fantasy world featuring p
 - Class definition system
 - Equipment requirements
 
+### 6. Difficulty System
+
+#### Difficulty Requirements
+
+- Three distinct difficulty levels for different player skill levels
+- Comprehensive scaling affecting all game systems
+- Meaningful choices with trade-offs between challenge and accessibility
+
+#### Difficulty Design
+
+- **Difficulty Levels**:
+  - **Easy Mode - "Apprentice"**:
+    - Target audience: New RPG players, casual gamers
+    - Player advantages: +25% damage dealt, 20% less damage received
+    - Enemy scaling: -10% health, -20% damage output
+    - Progression benefits: +20% experience gain, +10% better loot
+    - Quality of life: Save on death, no permadeath, -20% encounter frequency
+    - Boss mechanics: Gentler phase transitions (70%/35% health thresholds)
+  - **Normal Mode - "Adventurer"**:
+    - Target audience: Standard RPG experience
+    - Balanced gameplay: All systems at intended 1.0 multiplier
+    - Standard progression: Normal experience and loot rates
+    - Classic features: Save on death, no permadeath
+    - Boss mechanics: Standard phase transitions (65%/30% health thresholds)
+  - **Hard Mode - "Legend"**:
+    - Target audience: Experienced players seeking maximum challenge
+    - Player disadvantages: -15% damage dealt, +30% damage received
+    - Enemy scaling: +20% health, +30% damage output
+    - Progression penalties: -10% experience, -5% loot quality
+    - Hardcore features: No save on death, permadeath enabled, +30% encounter frequency
+    - Boss mechanics: Aggressive phase transitions (60%/25% health thresholds)
+
+- **System-Wide Impact**:
+  - **Combat**: Damage multipliers, health scaling, encounter frequency
+  - **Progression**: Experience gain rates, attribute point allocation
+  - **Economy**: Loot quality modifiers, item availability
+  - **Save System**: Permadeath mechanics, death handling
+  - **Boss Encounters**: Phase transition timing, ability availability
+
+- **Permadeath Mechanics** (Hard Mode Only):
+  - Character death is permanent and irreversible
+  - Dead characters lose all equipment and progression
+  - Party size reduction affects combat capabilities
+  - Game over occurs when all characters are dead
+  - No resurrection items or revival mechanics
+
+- **Difficulty Selection**:
+  - Chosen at game start before character creation
+  - Cannot be changed during gameplay to maintain integrity
+  - Saved with game data for consistency
+  - Visual indicators throughout UI to remind player of current difficulty
+
+#### Difficulty Dependencies
+
+- Combat system for damage calculations
+- Progression system for experience scaling
+- Save system for permadeath and death handling
+- UI system for difficulty indicators and selection
+
 ## UI/UX Requirements
 
 ### Text-Based Interface Design
