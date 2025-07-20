@@ -381,4 +381,374 @@ public class CurrencySystemTests
 - **Load Times**: <2 seconds for scene transitions
 - **Save/Load**: <1 second for game state persistence
 
-This architecture ensures the game follows SOLID principles while maintaining the flexibility to add new features and content through data-driven design.
+## Game Balancing System
+
+### JSON Configuration Architecture
+
+**Purpose:** Enable game designers to adjust all gameplay parameters without touching code, supporting rapid iteration and live balancing updates.
+
+### Configuration File Structure
+
+**Master Configuration:** `StreamingAssets/GameBalance/GameConfig.json`
+
+```json
+{
+  "version": "1.0.0",
+  "lastModified": "2025-07-20T10:30:00Z",
+  "combat": {
+    "damageMultipliers": {
+      "oneHandedWeapons": 1.0,
+      "twoHandedWeapons": 1.25,
+      "rangedWeapons": 0.9,
+      "magic": 1.1
+    },
+    "armorEffectiveness": {
+      "lightArmor": 0.8,
+      "mediumArmor": 1.0,
+      "heavyArmor": 1.3
+    },
+    "criticalHitChance": {
+      "base": 0.05,
+      "knife": 0.15,
+      "sword": 0.08,
+      "axe": 0.12,
+      "bow": 0.1
+    },
+    "poisonDamage": {
+      "basicPoison": {
+        "damagePerTurn": 3,
+        "duration": 3,
+        "cost": 50
+      },
+      "paralyticPoison": {
+        "stunChance": 0.3,
+        "duration": 1,
+        "cost": 120
+      },
+      "weakeningPoison": {
+        "strengthReduction": 0.25,
+        "duration": 5,
+        "cost": 80
+      },
+      "deadlyPoison": {
+        "damagePerTurn": 8,
+        "duration": 4,
+        "cost": 200
+      }
+    }
+  },
+  "progression": {
+    "experienceTable": [
+      100, 250, 450, 700, 1000, 1350, 1750, 2200, 2700, 3250,
+      3850, 4500, 5200, 5950, 6750, 7600, 8500, 9450, 10450, 11500
+    ],
+    "attributeGrowth": {
+      "healthPerLevel": 5,
+      "manaPerLevel": 3,
+      "attributePointsPerLevel": 1
+    },
+    "classModifiers": {
+      "warrior": {
+        "healthMultiplier": 1.5,
+        "manaMultiplier": 0.5,
+        "damageMultiplier": 1.2
+      },
+      "ranger": {
+        "healthMultiplier": 1.0,
+        "manaMultiplier": 0.8,
+        "damageMultiplier": 1.0
+      },
+      "mage": {
+        "healthMultiplier": 0.7,
+        "manaMultiplier": 1.8,
+        "damageMultiplier": 0.8
+      },
+      "cleric": {
+        "healthMultiplier": 1.1,
+        "manaMultiplier": 1.3,
+        "damageMultiplier": 0.9
+      }
+    }
+  },
+  "economy": {
+    "startingCurrency": 500,
+    "shopPrices": {
+      "weapons": {
+        "knife": 150,
+        "sword": 800,
+        "axe": 900,
+        "greatSword": 2500,
+        "greatAxe": 2800,
+        "spear": 600,
+        "bow": 1200,
+        "crossbow": 1800,
+        "staff": 1500
+      },
+      "armor": {
+        "lightArmor": 500,
+        "mediumArmor": 1500,
+        "heavyArmor": 4000
+      },
+      "shields": {
+        "buckler": 300,
+        "roundShield": 800,
+        "towerShield": 2000,
+        "magicShield": 5000
+      },
+      "consumables": {
+        "healthPotion": 50,
+        "manaPotion": 75,
+        "basicPoisonVial": 50,
+        "paralyticPoisonVial": 120,
+        "weakeningPoisonVial": 80,
+        "deadlyPoisonVial": 200
+      }
+    },
+    "currencyConversion": {
+      "copperToSilver": 100,
+      "silverToGold": 100
+    }
+  },
+  "magic": {
+    "manaCosts": {
+      "fire": {
+        "fireball": 8,
+        "flameBurst": 12,
+        "igniteWeapon": 6
+      },
+      "water": {
+        "healingSpring": 10,
+        "tidalWave": 15,
+        "purify": 5,
+        "mistForm": 8
+      },
+      "earth": {
+        "stoneArmor": 12,
+        "earthquake": 18,
+        "entangle": 10,
+        "boulderThrow": 14
+      }
+    },
+    "spellEffects": {
+      "healingSpring": {
+        "healPerTurn": 8,
+        "duration": 3
+      },
+      "stoneArmor": {
+        "defenseBonus": 5,
+        "movementPenalty": 0.3,
+        "duration": 10
+      },
+      "igniteWeapon": {
+        "bonusDamage": 4,
+        "duration": 5
+      }
+    },
+    "manaRegeneration": {
+      "basePerTurn": 2,
+      "staffBonus": 1.5,
+      "restMultiplier": 3.0
+    }
+  }
+}
+```
+
+### Configuration Management System
+
+**Configuration Loader:**
+
+```csharp
+[System.Serializable]
+public class GameBalanceConfig
+{
+    public string version;
+    public string lastModified;
+    public CombatConfig combat;
+    public ProgressionConfig progression;
+    public EconomyConfig economy;
+    public MagicConfig magic;
+}
+
+public class BalanceManager : MonoBehaviour
+{
+    public static BalanceManager Instance { get; private set; }
+    
+    [SerializeField] private GameBalanceConfig config;
+    
+    private void Awake()
+    {
+        Instance = this;
+        LoadConfiguration();
+    }
+    
+    private void LoadConfiguration()
+    {
+        string configPath = Path.Combine(Application.streamingAssetsPath, "GameBalance", "GameConfig.json");
+        
+        if (File.Exists(configPath))
+        {
+            string json = File.ReadAllText(configPath);
+            config = JsonUtility.FromJson<GameBalanceConfig>(json);
+            ValidateConfiguration();
+        }
+        else
+        {
+            CreateDefaultConfiguration();
+        }
+    }
+    
+    public float GetDamageMultiplier(WeaponType weaponType)
+    {
+        return weaponType switch
+        {
+            WeaponType.OneHanded => config.combat.damageMultipliers.oneHandedWeapons,
+            WeaponType.TwoHanded => config.combat.damageMultipliers.twoHandedWeapons,
+            WeaponType.Ranged => config.combat.damageMultipliers.rangedWeapons,
+            _ => 1.0f
+        };
+    }
+    
+    public int GetExperienceRequired(int level)
+    {
+        if (level > 0 && level <= config.progression.experienceTable.Length)
+            return config.progression.experienceTable[level - 1];
+        return int.MaxValue;
+    }
+    
+    public int GetItemPrice(string category, string itemName)
+    {
+        // Dynamic price lookup from JSON configuration
+        return config.economy.shopPrices.GetPrice(category, itemName);
+    }
+}
+```
+
+### Hot-Reload Configuration System
+
+**Live Configuration Updates:**
+
+```csharp
+public class ConfigurationWatcher : MonoBehaviour
+{
+    private FileSystemWatcher fileWatcher;
+    private string configDirectory;
+    
+    private void Start()
+    {
+        configDirectory = Path.Combine(Application.streamingAssetsPath, "GameBalance");
+        SetupFileWatcher();
+    }
+    
+    private void SetupFileWatcher()
+    {
+        #if UNITY_EDITOR || DEVELOPMENT_BUILD
+        fileWatcher = new FileSystemWatcher(configDirectory, "*.json");
+        fileWatcher.Changed += OnConfigurationChanged;
+        fileWatcher.EnableRaisingEvents = true;
+        #endif
+    }
+    
+    private void OnConfigurationChanged(object sender, FileSystemEventArgs e)
+    {
+        // Reload configuration on file change (development builds only)
+        if (e.Name == "GameConfig.json")
+        {
+            StartCoroutine(ReloadConfigurationDelayed());
+        }
+    }
+    
+    private IEnumerator ReloadConfigurationDelayed()
+    {
+        yield return new WaitForSeconds(0.5f); // Wait for file write to complete
+        BalanceManager.Instance.LoadConfiguration();
+        GameEvents.OnConfigurationReloaded?.Invoke();
+    }
+}
+```
+
+### Configuration Validation System
+
+**Data Integrity Checks:**
+
+```csharp
+public class ConfigurationValidator
+{
+    public static List<string> ValidateConfiguration(GameBalanceConfig config)
+    {
+        var errors = new List<string>();
+        
+        // Validate damage multipliers are reasonable
+        if (config.combat.damageMultipliers.twoHandedWeapons <= config.combat.damageMultipliers.oneHandedWeapons)
+            errors.Add("Two-handed weapons should have higher damage multiplier than one-handed");
+            
+        // Validate experience table progression
+        for (int i = 1; i < config.progression.experienceTable.Length; i++)
+        {
+            if (config.progression.experienceTable[i] <= config.progression.experienceTable[i - 1])
+                errors.Add($"Experience required for level {i + 1} should be higher than level {i}");
+        }
+        
+        // Validate price consistency
+        if (config.economy.shopPrices.weapons.greatSword <= config.economy.shopPrices.weapons.sword)
+            errors.Add("Great sword should cost more than regular sword");
+            
+        // Validate mana costs are positive
+        foreach (var school in new[] { config.magic.manaCosts.fire, config.magic.manaCosts.water, config.magic.manaCosts.earth })
+        {
+            var costs = school.GetType().GetFields();
+            foreach (var cost in costs)
+            {
+                if ((int)cost.GetValue(school) <= 0)
+                    errors.Add($"Mana cost for {cost.Name} must be positive");
+            }
+        }
+        
+        return errors;
+    }
+}
+```
+
+### Environment-Specific Configuration
+
+**Configuration Overrides for Testing:**
+
+```json
+// StreamingAssets/GameBalance/TestConfig.json
+{
+  "baseConfig": "GameConfig.json",
+  "overrides": {
+    "combat.damageMultipliers.oneHandedWeapons": 10.0,
+    "progression.experienceTable": [10, 20, 30, 40, 50],
+    "economy.startingCurrency": 100000
+  }
+}
+```
+
+**Configuration Loading Logic:**
+
+```csharp
+public void LoadTestConfiguration()
+{
+    #if UNITY_EDITOR || DEVELOPMENT_BUILD
+    string testConfigPath = Path.Combine(Application.streamingAssetsPath, "GameBalance", "TestConfig.json");
+    if (File.Exists(testConfigPath))
+    {
+        LoadConfiguration(); // Load base config first
+        ApplyConfigurationOverrides(testConfigPath);
+    }
+    #endif
+}
+```
+
+### Benefits of JSON Configuration System
+
+1. **Designer Empowerment**: Game designers can adjust values without programmer intervention
+2. **Rapid Iteration**: Changes take effect immediately without recompilation
+3. **Version Control**: Configuration changes are tracked alongside code changes
+4. **A/B Testing**: Easy to create different balance configurations for testing
+5. **Live Balancing**: Post-release balance updates through configuration patches
+6. **Platform Specific**: Different configurations for mobile vs desktop
+7. **Debugging**: Test configurations for development and QA
+8. **Validation**: Built-in checks ensure configuration integrity
+
+This architecture ensures the game follows SOLID principles while maintaining the flexibility to add new features and content through data-driven design, with comprehensive JSON-based balancing capabilities.
