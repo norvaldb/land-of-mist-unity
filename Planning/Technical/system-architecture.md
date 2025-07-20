@@ -911,4 +911,985 @@ public void LoadTestConfiguration()
 7. **Debugging**: Test configurations for development and QA
 8. **Validation**: Built-in checks ensure configuration integrity
 
+## Adversary System Architecture
+
+### JSON-Configurable Enemy Design
+
+**Purpose:** Create a diverse roster of enemies with configurable stats, abilities, and behaviors through JSON files, enabling rich tactical encounters without code changes.
+
+### Enemy Classification System
+
+**Enemy Categories:**
+
+```text
+Adversary Hierarchy:
+├── Humanoid Enemies
+│   ├── Bandits & Outlaws
+│   ├── Rival Adventurers
+│   └── Corrupted Guards
+├── Wilderness Creatures
+│   ├── Beasts & Animals
+│   ├── Magical Creatures
+│   └── Elemental Beings
+├── Undead Entities
+│   ├── Skeletons & Zombies
+│   ├── Wraiths & Spirits
+│   └── Undead Lords
+└── Boss Encounters
+    ├── Named Champions
+    ├── Ancient Evils
+    └── Dragon-kin
+```
+
+### Enemy Configuration Files
+
+**Master Enemy Database:** `StreamingAssets/Enemies/EnemyDatabase.json`
+
+```json
+{
+  "version": "1.0.0",
+  "lastModified": "2025-07-20T12:00:00Z",
+  "enemyCategories": {
+    "humanoids": {
+      "banditRaider": {
+        "name": "Bandit Raider",
+        "description": "A desperate outlaw wielding crude weapons",
+        "category": "humanoid",
+        "subtype": "bandit",
+        "level": 2,
+        "attributes": {
+          "strength": 12,
+          "dexterity": 14,
+          "constitution": 11,
+          "intelligence": 8,
+          "wisdom": 10,
+          "charisma": 9
+        },
+        "combat": {
+          "health": 25,
+          "mana": 0,
+          "armorClass": 12,
+          "initiative": 14,
+          "attackBonus": 3,
+          "damageResistances": [],
+          "statusImmunities": []
+        },
+        "equipment": {
+          "weapon": "rustyKnife",
+          "armor": "leatherVest",
+          "shield": null,
+          "accessories": ["dirtyBandana"]
+        },
+        "abilities": [
+          {
+            "name": "Desperate Strike",
+            "type": "active",
+            "description": "Increased damage when below 50% health",
+            "cooldown": 3,
+            "effects": [
+              {
+                "type": "conditionalDamage",
+                "condition": "healthBelow50",
+                "bonusDamage": 5
+              }
+            ]
+          },
+          {
+            "name": "Coward's Retreat",
+            "type": "passive",
+            "description": "50% chance to flee when below 25% health",
+            "effects": [
+              {
+                "type": "fleeChance",
+                "condition": "healthBelow25",
+                "chance": 0.5
+              }
+            ]
+          }
+        ],
+        "loot": {
+          "guaranteed": [
+            {
+              "item": "copper",
+              "amount": "2d6"
+            }
+          ],
+          "possible": [
+            {
+              "item": "rustyKnife",
+              "chance": 0.3
+            },
+            {
+              "item": "basicPoisonVial",
+              "chance": 0.1
+            }
+          ]
+        },
+        "behavior": {
+          "aggressionLevel": "medium",
+          "preferredRange": "melee",
+          "tacticalIntelligence": "low",
+          "groupBehavior": "individual"
+        }
+      },
+      "veteranSoldier": {
+        "name": "Veteran Soldier",
+        "description": "A skilled warrior with military training",
+        "category": "humanoid",
+        "subtype": "soldier",
+        "level": 5,
+        "attributes": {
+          "strength": 16,
+          "dexterity": 13,
+          "constitution": 15,
+          "intelligence": 12,
+          "wisdom": 14,
+          "charisma": 11
+        },
+        "combat": {
+          "health": 45,
+          "mana": 10,
+          "armorClass": 16,
+          "initiative": 13,
+          "attackBonus": 6,
+          "damageResistances": ["slashing"],
+          "statusImmunities": ["fear"]
+        },
+        "equipment": {
+          "weapon": "ironSword",
+          "armor": "chainMail",
+          "shield": "ironShield",
+          "accessories": ["militaryInsignia"]
+        },
+        "abilities": [
+          {
+            "name": "Shield Bash",
+            "type": "active",
+            "description": "Stun target for 1 turn",
+            "cooldown": 4,
+            "effects": [
+              {
+                "type": "damage",
+                "amount": "1d4+2"
+              },
+              {
+                "type": "statusEffect",
+                "effect": "stunned",
+                "duration": 1
+              }
+            ]
+          },
+          {
+            "name": "Combat Veteran",
+            "type": "passive",
+            "description": "Immune to fear and +2 to initiative",
+            "effects": [
+              {
+                "type": "statusImmunity",
+                "status": "fear"
+              },
+              {
+                "type": "attributeBonus",
+                "attribute": "initiative",
+                "bonus": 2
+              }
+            ]
+          }
+        ],
+        "loot": {
+          "guaranteed": [
+            {
+              "item": "silver",
+              "amount": "1d4"
+            }
+          ],
+          "possible": [
+            {
+              "item": "ironSword",
+              "chance": 0.4
+            },
+            {
+              "item": "chainMail",
+              "chance": 0.2
+            },
+            {
+              "item": "healthPotion",
+              "chance": 0.6
+            }
+          ]
+        },
+        "behavior": {
+          "aggressionLevel": "high",
+          "preferredRange": "melee",
+          "tacticalIntelligence": "medium",
+          "groupBehavior": "formation"
+        }
+      }
+    },
+    "wilderness": {
+      "direwolf": {
+        "name": "Dire Wolf",
+        "description": "A massive wolf with glowing red eyes",
+        "category": "beast",
+        "subtype": "canine",
+        "level": 3,
+        "attributes": {
+          "strength": 15,
+          "dexterity": 16,
+          "constitution": 14,
+          "intelligence": 3,
+          "wisdom": 12,
+          "charisma": 7
+        },
+        "combat": {
+          "health": 35,
+          "mana": 0,
+          "armorClass": 14,
+          "initiative": 16,
+          "attackBonus": 4,
+          "damageResistances": [],
+          "statusImmunities": ["charm"]
+        },
+        "equipment": {
+          "weapon": "naturalClaws",
+          "armor": "thickFur",
+          "shield": null,
+          "accessories": []
+        },
+        "abilities": [
+          {
+            "name": "Pack Leader",
+            "type": "passive",
+            "description": "Nearby wolves gain +2 damage",
+            "effects": [
+              {
+                "type": "auraBonus",
+                "range": 2,
+                "targets": ["wolf", "direwolf"],
+                "bonus": {
+                  "damage": 2
+                }
+              }
+            ]
+          },
+          {
+            "name": "Pounce",
+            "type": "active",
+            "description": "Leap attack with knockdown chance",
+            "cooldown": 3,
+            "effects": [
+              {
+                "type": "damage",
+                "amount": "2d6+3"
+              },
+              {
+                "type": "statusChance",
+                "effect": "prone",
+                "chance": 0.6,
+                "duration": 1
+              }
+            ]
+          }
+        ],
+        "loot": {
+          "guaranteed": [
+            {
+              "item": "wolfPelt",
+              "amount": 1
+            }
+          ],
+          "possible": [
+            {
+              "item": "wolfFang",
+              "chance": 0.8
+            },
+            {
+              "item": "copper",
+              "amount": "1d4",
+              "chance": 0.3
+            }
+          ]
+        },
+        "behavior": {
+          "aggressionLevel": "high",
+          "preferredRange": "melee",
+          "tacticalIntelligence": "low",
+          "groupBehavior": "pack"
+        }
+      },
+      "forestSprite": {
+        "name": "Forest Sprite",
+        "description": "A mischievous fae creature wreathed in leaves",
+        "category": "fae",
+        "subtype": "sprite",
+        "level": 4,
+        "attributes": {
+          "strength": 6,
+          "dexterity": 18,
+          "constitution": 10,
+          "intelligence": 14,
+          "wisdom": 16,
+          "charisma": 15
+        },
+        "combat": {
+          "health": 20,
+          "mana": 40,
+          "armorClass": 16,
+          "initiative": 18,
+          "attackBonus": 2,
+          "damageResistances": ["earth"],
+          "statusImmunities": ["entangle"]
+        },
+        "equipment": {
+          "weapon": "thornDart",
+          "armor": "barkSkin",
+          "shield": null,
+          "accessories": ["flowerCrown"]
+        },
+        "abilities": [
+          {
+            "name": "Nature's Wrath",
+            "type": "active",
+            "description": "Entangle all enemies in thorny vines",
+            "cooldown": 5,
+            "manaCost": 15,
+            "effects": [
+              {
+                "type": "areaStatusEffect",
+                "effect": "entangled",
+                "duration": 2,
+                "targets": "allEnemies"
+              }
+            ]
+          },
+          {
+            "name": "Pixie Dust",
+            "type": "active",
+            "description": "Confuse target, causing them to attack randomly",
+            "cooldown": 3,
+            "manaCost": 8,
+            "effects": [
+              {
+                "type": "statusEffect",
+                "effect": "confused",
+                "duration": 2
+              }
+            ]
+          },
+          {
+            "name": "Forest Camouflage",
+            "type": "passive",
+            "description": "50% chance to avoid physical attacks in forest",
+            "effects": [
+              {
+                "type": "evasionBonus",
+                "condition": "terrainType:forest",
+                "bonus": 0.5
+              }
+            ]
+          }
+        ],
+        "loot": {
+          "guaranteed": [
+            {
+              "item": "spriteEssence",
+              "amount": 1
+            }
+          ],
+          "possible": [
+            {
+              "item": "manaPotion",
+              "chance": 0.7
+            },
+            {
+              "item": "enchantedBerry",
+              "chance": 0.5
+            },
+            {
+              "item": "gold",
+              "amount": 1,
+              "chance": 0.2
+            }
+          ]
+        },
+        "behavior": {
+          "aggressionLevel": "low",
+          "preferredRange": "ranged",
+          "tacticalIntelligence": "high",
+          "groupBehavior": "support"
+        }
+      }
+    },
+    "undead": {
+      "skeletonWarrior": {
+        "name": "Skeleton Warrior",
+        "description": "Animated bones wielding ancient weapons",
+        "category": "undead",
+        "subtype": "skeleton",
+        "level": 3,
+        "attributes": {
+          "strength": 13,
+          "dexterity": 14,
+          "constitution": 15,
+          "intelligence": 6,
+          "wisdom": 8,
+          "charisma": 5
+        },
+        "combat": {
+          "health": 30,
+          "mana": 0,
+          "armorClass": 13,
+          "initiative": 14,
+          "attackBonus": 4,
+          "damageResistances": ["piercing", "slashing"],
+          "statusImmunities": ["poison", "fear", "charm"]
+        },
+        "equipment": {
+          "weapon": "ancientSword",
+          "armor": "brittleChainmail",
+          "shield": "rottenShield",
+          "accessories": ["tatteredBanner"]
+        },
+        "abilities": [
+          {
+            "name": "Undead Fortitude",
+            "type": "passive",
+            "description": "25% chance to ignore fatal blow and continue fighting",
+            "effects": [
+              {
+                "type": "deathSave",
+                "chance": 0.25
+              }
+            ]
+          },
+          {
+            "name": "Bone Shatter",
+            "type": "active",
+            "description": "Explode bone fragments in area when destroyed",
+            "cooldown": "onDeath",
+            "effects": [
+              {
+                "type": "areaDamage",
+                "range": 1,
+                "amount": "1d6"
+              }
+            ]
+          }
+        ],
+        "loot": {
+          "guaranteed": [
+            {
+              "item": "ancientBone",
+              "amount": "1d3"
+            }
+          ],
+          "possible": [
+            {
+              "item": "ancientSword",
+              "chance": 0.3
+            },
+            {
+              "item": "copper",
+              "amount": "1d6",
+              "chance": 0.4
+            }
+          ]
+        },
+        "behavior": {
+          "aggressionLevel": "medium",
+          "preferredRange": "melee",
+          "tacticalIntelligence": "minimal",
+          "groupBehavior": "swarm"
+        }
+      }
+    },
+    "bosses": {
+      "banditKing": {
+        "name": "Gareth the Bandit King",
+        "description": "A ruthless leader who commands fear and respect",
+        "category": "humanoid",
+        "subtype": "banditBoss",
+        "level": 8,
+        "attributes": {
+          "strength": 18,
+          "dexterity": 16,
+          "constitution": 16,
+          "intelligence": 14,
+          "wisdom": 12,
+          "charisma": 17
+        },
+        "combat": {
+          "health": 80,
+          "mana": 20,
+          "armorClass": 18,
+          "initiative": 16,
+          "attackBonus": 8,
+          "damageResistances": ["poison"],
+          "statusImmunities": ["fear", "charm"]
+        },
+        "equipment": {
+          "weapon": "masterworkSword",
+          "armor": "reinforcedLeather",
+          "shield": null,
+          "accessories": ["crownOfThorns", "crimsonCloak"]
+        },
+        "abilities": [
+          {
+            "name": "Command",
+            "type": "active",
+            "description": "Rally all allies, giving them extra actions",
+            "cooldown": 5,
+            "effects": [
+              {
+                "type": "allyBuff",
+                "effect": "extraAction",
+                "duration": 1,
+                "targets": "allAllies"
+              }
+            ]
+          },
+          {
+            "name": "Whirlwind Attack",
+            "type": "active",
+            "description": "Attack all adjacent enemies",
+            "cooldown": 4,
+            "effects": [
+              {
+                "type": "meleeAreaAttack",
+                "range": 1,
+                "damage": "2d8+5"
+              }
+            ]
+          },
+          {
+            "name": "King's Presence",
+            "type": "passive",
+            "description": "All allies gain +2 to attack and damage",
+            "effects": [
+              {
+                "type": "auraBonus",
+                "range": 3,
+                "targets": "allies",
+                "bonus": {
+                  "attack": 2,
+                  "damage": 2
+                }
+              }
+            ]
+          }
+        ],
+        "phases": [
+          {
+            "healthThreshold": 100,
+            "abilities": ["Command", "normalAttack"],
+            "behavior": "defensive"
+          },
+          {
+            "healthThreshold": 50,
+            "abilities": ["Command", "WhirlwindAttack", "normalAttack"],
+            "behavior": "aggressive"
+          },
+          {
+            "healthThreshold": 25,
+            "abilities": ["WhirlwindAttack", "desperateStrike"],
+            "behavior": "berserk"
+          }
+        ],
+        "loot": {
+          "guaranteed": [
+            {
+              "item": "gold",
+              "amount": "3d10"
+            },
+            {
+              "item": "masterworkSword",
+              "amount": 1
+            }
+          ],
+          "possible": [
+            {
+              "item": "crownOfThorns",
+              "chance": 1.0
+            },
+            {
+              "item": "banditKingTreasure",
+              "chance": 0.8
+            }
+          ]
+        },
+        "behavior": {
+          "aggressionLevel": "variable",
+          "preferredRange": "melee",
+          "tacticalIntelligence": "high",
+          "groupBehavior": "leader"
+        }
+      }
+    }
+  }
+}
+```
+
+### Enemy System Implementation
+
+**Enemy Data Management:**
+
+```csharp
+[System.Serializable]
+public class EnemyData
+{
+    public string name;
+    public string description;
+    public string category;
+    public string subtype;
+    public int level;
+    
+    public AttributeData attributes;
+    public CombatData combat;
+    public EquipmentData equipment;
+    public EnemyAbility[] abilities;
+    public LootData loot;
+    public BehaviorData behavior;
+    public PhaseData[] phases; // For boss encounters
+}
+
+[System.Serializable]
+public class EnemyAbility
+{
+    public string name;
+    public string type; // "active", "passive", "reaction"
+    public string description;
+    public int cooldown;
+    public int manaCost;
+    public EffectData[] effects;
+    public ConditionData[] conditions;
+}
+
+[System.Serializable]
+public class BehaviorData
+{
+    public string aggressionLevel; // "low", "medium", "high", "variable"
+    public string preferredRange; // "melee", "ranged", "any"
+    public string tacticalIntelligence; // "minimal", "low", "medium", "high"
+    public string groupBehavior; // "individual", "pack", "formation", "support", "leader"
+}
+
+public class EnemyManager : MonoBehaviour
+{
+    public static EnemyManager Instance { get; private set; }
+    
+    [SerializeField] private Dictionary<string, EnemyData> enemyDatabase;
+    [SerializeField] private List<GameObject> activeEnemies;
+    
+    private void Awake()
+    {
+        Instance = this;
+        LoadEnemyDatabase();
+    }
+    
+    private void LoadEnemyDatabase()
+    {
+        string dbPath = Path.Combine(Application.streamingAssetsPath, "Enemies", "EnemyDatabase.json");
+        
+        if (File.Exists(dbPath))
+        {
+            string json = File.ReadAllText(dbPath);
+            var database = JsonUtility.FromJson<EnemyDatabase>(json);
+            enemyDatabase = database.FlattenToDict();
+        }
+        else
+        {
+            Debug.LogError("Enemy database not found!");
+        }
+    }
+    
+    public GameObject SpawnEnemy(string enemyId, Vector3 position)
+    {
+        if (!enemyDatabase.ContainsKey(enemyId))
+        {
+            Debug.LogError($"Enemy {enemyId} not found in database!");
+            return null;
+        }
+        
+        var enemyData = enemyDatabase[enemyId];
+        var enemyGO = CreateEnemyFromData(enemyData);
+        enemyGO.transform.position = position;
+        
+        activeEnemies.Add(enemyGO);
+        return enemyGO;
+    }
+    
+    private GameObject CreateEnemyFromData(EnemyData data)
+    {
+        var enemyGO = new GameObject(data.name);
+        var enemy = enemyGO.AddComponent<Enemy>();
+        
+        // Initialize enemy with data
+        enemy.Initialize(data);
+        
+        return enemyGO;
+    }
+}
+```
+
+**Enemy Behavior AI:**
+
+```csharp
+public class EnemyAI : MonoBehaviour
+{
+    [SerializeField] private EnemyData enemyData;
+    [SerializeField] private Enemy enemy;
+    [SerializeField] private float decisionDelay = 1f;
+    
+    public CombatAction ChooseAction()
+    {
+        return enemyData.behavior.tacticalIntelligence switch
+        {
+            "minimal" => ChooseMinimalAction(),
+            "low" => ChooseLowIntelligenceAction(),
+            "medium" => ChooseMediumIntelligenceAction(),
+            "high" => ChooseHighIntelligenceAction(),
+            _ => ChooseMinimalAction()
+        };
+    }
+    
+    private CombatAction ChooseMinimalAction()
+    {
+        // Simple: Always attack nearest enemy
+        var target = FindNearestTarget();
+        return new AttackAction(target);
+    }
+    
+    private CombatAction ChooseLowIntelligenceAction()
+    {
+        // Basic tactics: Use abilities if available, otherwise attack
+        var availableAbilities = GetAvailableAbilities();
+        
+        if (availableAbilities.Count > 0 && Random.value < 0.3f)
+        {
+            var ability = availableAbilities[Random.Range(0, availableAbilities.Count)];
+            return new AbilityAction(ability, SelectTargetForAbility(ability));
+        }
+        
+        return new AttackAction(FindNearestTarget());
+    }
+    
+    private CombatAction ChooseMediumIntelligenceAction()
+    {
+        // Tactical: Consider health, positioning, and ability synergies
+        
+        // Prioritize healing if health is low
+        if (enemy.HealthPercent < 0.3f)
+        {
+            var healingAbility = FindHealingAbility();
+            if (healingAbility != null)
+                return new AbilityAction(healingAbility, enemy);
+        }
+        
+        // Use area abilities when multiple targets are clustered
+        var areaAbility = FindAreaAbility();
+        if (areaAbility != null && CountTargetsInRange(areaAbility) >= 2)
+        {
+            return new AbilityAction(areaAbility, FindOptimalAreaTarget(areaAbility));
+        }
+        
+        // Default to attacking weakest target
+        return new AttackAction(FindWeakestTarget());
+    }
+    
+    private CombatAction ChooseHighIntelligenceAction()
+    {
+        // Advanced tactics: Multi-turn planning, counter-strategies
+        
+        // Analyze party composition and adjust strategy
+        var partyAnalysis = AnalyzeEnemyParty();
+        
+        // Counter specific threats (e.g., prioritize mages)
+        if (partyAnalysis.HasDangerousMage)
+        {
+            var mage = FindEnemyMage();
+            if (mage != null)
+                return new AttackAction(mage);
+        }
+        
+        // Use support abilities to buff allies
+        if (HasAlliesNearby() && Random.value < 0.4f)
+        {
+            var supportAbility = FindSupportAbility();
+            if (supportAbility != null)
+                return new AbilityAction(supportAbility, FindBestAllyTarget());
+        }
+        
+        // Fallback to medium intelligence behavior
+        return ChooseMediumIntelligenceAction();
+    }
+}
+```
+
+### Encounter Generation System
+
+**Dynamic Encounter Configuration:**
+
+```json
+// StreamingAssets/Encounters/EncounterTable.json
+{
+  "version": "1.0.0",
+  "encountersByRegion": {
+    "darkForest": {
+      "common": [
+        {
+          "name": "Wolf Pack",
+          "weight": 40,
+          "enemies": [
+            { "id": "direwolf", "count": 1 },
+            { "id": "wolf", "count": "2d3" }
+          ],
+          "environment": "forest",
+          "difficulty": "medium"
+        },
+        {
+          "name": "Bandit Ambush",
+          "weight": 35,
+          "enemies": [
+            { "id": "banditRaider", "count": "2d2" },
+            { "id": "banditArcher", "count": 1 }
+          ],
+          "environment": "roadside",
+          "difficulty": "medium"
+        }
+      ],
+      "rare": [
+        {
+          "name": "Ancient Grove Guardian",
+          "weight": 5,
+          "enemies": [
+            { "id": "forestSprite", "count": 2 },
+            { "id": "entWarden", "count": 1 }
+          ],
+          "environment": "ancientGrove",
+          "difficulty": "hard"
+        }
+      ],
+      "boss": [
+        {
+          "name": "The Bandit King's Lair",
+          "weight": 1,
+          "enemies": [
+            { "id": "banditKing", "count": 1 },
+            { "id": "veteranSoldier", "count": 2 },
+            { "id": "banditRaider", "count": 3 }
+          ],
+          "environment": "banditCamp",
+          "difficulty": "boss"
+        }
+      ]
+    }
+  }
+}
+```
+
+**Encounter Manager:**
+
+```csharp
+public class EncounterManager : MonoBehaviour
+{
+    [SerializeField] private EncounterTable encounterTable;
+    [SerializeField] private string currentRegion = "darkForest";
+    
+    public Encounter GenerateRandomEncounter()
+    {
+        var regionEncounters = encounterTable.encountersByRegion[currentRegion];
+        
+        // Determine encounter type based on rarity
+        var roll = Random.Range(0f, 100f);
+        var encounterType = roll switch
+        {
+            < 75f => "common",
+            < 95f => "rare",
+            _ => "boss"
+        };
+        
+        var possibleEncounters = regionEncounters[encounterType];
+        var selectedEncounter = WeightedRandom.Choose(possibleEncounters);
+        
+        return CreateEncounter(selectedEncounter);
+    }
+    
+    private Encounter CreateEncounter(EncounterData data)
+    {
+        var encounter = new Encounter();
+        encounter.name = data.name;
+        encounter.environment = data.environment;
+        encounter.difficulty = data.difficulty;
+        
+        foreach (var enemyGroup in data.enemies)
+        {
+            int count = DiceRoller.Roll(enemyGroup.count);
+            for (int i = 0; i < count; i++)
+            {
+                var enemy = EnemyManager.Instance.SpawnEnemy(
+                    enemyGroup.id, 
+                    GetSpawnPosition()
+                );
+                encounter.enemies.Add(enemy);
+            }
+        }
+        
+        return encounter;
+    }
+}
+```
+
+### Suggested Enemy Roster
+
+**Humanoid Adversaries:**
+
+1. **Bandits & Outlaws**:
+   - Bandit Raider (Level 2): Basic melee fighter
+   - Bandit Archer (Level 3): Ranged attacks with poison arrows
+   - Bandit Enforcer (Level 4): Heavy armor, intimidation abilities
+   - Bandit King (Level 8): Boss with command abilities
+
+2. **Corrupted Guards**:
+   - Fallen Soldier (Level 3): Former guards turned to darkness
+   - Dark Captain (Level 6): Tactical leader with area buffs
+   - Corrupted Paladin (Level 7): Fallen holy warrior with dark magic
+
+3. **Rival Adventurers**:
+   - Mercenary Warrior (Level 4): Skilled fighter with multiple weapons
+   - Rogue Mage (Level 5): Dangerous spellcaster with forbidden magic
+   - Treasure Hunter (Level 3): Uses traps and dirty fighting
+
+**Wilderness Creatures:**
+
+1. **Beasts & Animals**:
+   - Wolf (Level 1): Pack hunters with coordination
+   - Dire Wolf (Level 3): Alpha predators with leadership abilities
+   - Brown Bear (Level 4): Powerful melee attacker with rage
+   - Giant Spider (Level 2): Web attacks and poison
+
+2. **Magical Creatures**:
+   - Forest Sprite (Level 4): Nature magic and illusions
+   - Will-o'-Wisp (Level 3): Ethereal being with confusion abilities
+   - Treant Sapling (Level 5): Earth magic and entangle attacks
+
+3. **Elemental Beings**:
+   - Fire Salamander (Level 4): Fire damage and burn effects
+   - Water Elemental (Level 5): Healing and area attacks
+   - Earth Golem (Level 6): High defense, earthquake abilities
+
+**Undead Entities:**
+
+1. **Lesser Undead**:
+   - Skeleton Warrior (Level 3): Damage resistance, bone attacks
+   - Zombie (Level 2): Slow but persistent, disease attacks
+   - Ghost (Level 4): Incorporeal, fear and possession abilities
+
+2. **Greater Undead**:
+   - Wraith (Level 6): Life drain and ethereal movement
+   - Lich (Level 10): Powerful necromancer boss
+   - Death Knight (Level 8): Fallen paladin with dark powers
+
+This architecture ensures the game follows SOLID principles while maintaining the flexibility to add new features and content through data-driven design, with comprehensive JSON-based balancing capabilities.
+```
+
 This architecture ensures the game follows SOLID principles while maintaining the flexibility to add new features and content through data-driven design, with comprehensive JSON-based balancing capabilities.
