@@ -276,26 +276,186 @@ public static class UIEvents
 
 ### Save System Architecture
 
+**File-Based Data Storage Strategy:**
+
+For this text-based RPG with limited data volume (~2,000 data points maximum), a database is unnecessary. File-based storage provides optimal simplicity, performance, and maintainability.
+
+**Data Storage Analysis:**
+
+```text
+Static Data (ScriptableObjects):
+- Character classes: ~20 assets × 500 bytes = 10KB
+- Equipment definitions: ~100 items × 200 bytes = 20KB  
+- Spell data: ~50 spells × 300 bytes = 15KB
+- Balance config: ~5KB JSON file
+Total Static: ~50KB
+
+Dynamic Data (Save Files):
+- Party data: 4 characters × 2KB = 8KB
+- Inventory: ~100 items × 100 bytes = 10KB
+- Progress flags: ~500 bools × 1 byte = 500 bytes
+- Game state: ~2KB
+Total per Save: ~20KB
+```
+
 **Save Data Structure:**
 
 ```csharp
 [System.Serializable]
 public class SaveData
 {
+    public string version = "1.0.0";
+    public DateTime saveDate;
     public GameProgress gameProgress;
     public PartyData partyData;
     public Currency playerCurrency;
     public InventoryData inventory;
     public Dictionary<string, bool> gameFlags;
+    public Dictionary<string, int> questProgress;
+    public SceneTransitionData currentLocation;
+}
+
+[System.Serializable]
+public class PartyData
+{
+    public CharacterSaveData[] characters = new CharacterSaveData[4];
+    public int activePartySize;
+}
+
+[System.Serializable]
+public class CharacterSaveData
+{
+    public string characterName;
+    public string className;
+    public int level;
+    public int experience;
+    public AttributeData attributes;
+    public EquipmentData equipment;
+    public StatusEffectData[] activeEffects;
 }
 ```
 
-**Save Strategy:**
+**File-Based Save Strategy:**
 
-- JSON serialization for human readability
-- Compression for file size optimization
-- Versioning system for save compatibility
-- Backup saves for corruption protection
+```csharp
+public class SaveManager : MonoBehaviour
+{
+    private static readonly string SAVE_DIRECTORY = "GameSaves";
+    private static readonly string BACKUP_DIRECTORY = "GameSaves/Backups";
+    
+    public void SaveGame(int slotNumber)
+    {
+        var saveData = CollectSaveData();
+        
+        // Primary save
+        string savePath = GetSaveFilePath(slotNumber);
+        string json = JsonUtility.ToJson(saveData, prettyPrint: true);
+        
+        // Create backup before overwriting
+        CreateBackup(slotNumber);
+        
+        // Write with compression
+        byte[] compressed = Compress(json);
+        File.WriteAllBytes(savePath, compressed);
+        
+        // Verify save integrity
+        ValidateSaveFile(savePath);
+    }
+    
+    public SaveData LoadGame(int slotNumber)
+    {
+        string savePath = GetSaveFilePath(slotNumber);
+        
+        if (!File.Exists(savePath))
+            return null;
+            
+        try
+        {
+            byte[] compressed = File.ReadAllBytes(savePath);
+            string json = Decompress(compressed);
+            return JsonUtility.FromJson<SaveData>(json);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Save corruption detected, attempting backup restore: {ex.Message}");
+            return LoadBackup(slotNumber);
+        }
+    }
+}
+```
+
+**Save Strategy Benefits:**
+
+- **JSON Serialization**: Human-readable for debugging and modding
+- **Compression**: GZip compression reduces file size by ~70%
+- **Versioning**: Save format versioning for future compatibility
+- **Backup System**: Automatic backups prevent data loss
+- **Validation**: Checksum validation detects file corruption
+- **Multiple Slots**: Support for multiple save files
+- **Cross-Platform**: Works identically across all Unity platforms
+
+### Database vs File Storage Decision Matrix
+
+**When to Use File-Based Storage (Our Choice):**
+
+✅ **Perfect for Land of Mist RPG:**
+
+- Data volume < 100MB
+- Single-player experience
+- Simple data relationships
+- Infrequent data access patterns
+- Need for save file portability
+- Rapid development requirements
+
+**When Databases Become Necessary:**
+
+❌ **Not needed for this project, but useful for:**
+
+- **Multiplayer Games**: Concurrent player data access
+- **Large Scale**: >10,000 items, complex item relationships
+- **Analytics**: Player behavior tracking and analysis
+- **Live Operations**: Server-side events, leaderboards
+- **Complex Queries**: "Show all fire weapons owned by rangers level 10+"
+- **Real-time Updates**: Live economy, auction houses
+
+**Comparison Table:**
+
+| Aspect | File-Based (Our Choice) | Database |
+|--------|------------------------|----------|
+| **Setup Complexity** | Minimal | Moderate-High |
+| **Data Volume** | <100MB ✅ | >100MB |
+| **Query Complexity** | Simple lookups ✅ | Complex relationships |
+| **Concurrent Access** | Single user ✅ | Multiple users |
+| **Backup/Sync** | File copy ✅ | Export/Import |
+| **Modding Support** | Easy JSON editing ✅ | Requires tools |
+| **Performance** | Excellent for small data ✅ | Better for large datasets |
+| **Debugging** | Human-readable JSON ✅ | Requires DB tools |
+
+### Future Considerations
+
+**If the game grows beyond current scope:**
+
+```csharp
+// Easy migration path if needed later
+public interface IDataStorage
+{
+    Task<SaveData> LoadGameAsync(int slotNumber);
+    Task SaveGameAsync(SaveData data, int slotNumber);
+    Task<InventoryItem[]> GetInventoryAsync();
+}
+
+// Current implementation
+public class FileDataStorage : IDataStorage { }
+
+// Future database implementation  
+public class DatabaseStorage : IDataStorage { }
+```
+
+**Migration Strategy:**
+
+1. **Phase 1** (Current): File-based for MVP
+2. **Phase 2** (If needed): Hybrid approach (files for saves, DB for analytics)
+3. **Phase 3** (Multiplayer): Full database transition
 
 ## Event-Driven Architecture
 
@@ -572,19 +732,19 @@ public class GameBalanceConfig
 public class BalanceManager : MonoBehaviour
 {
     public static BalanceManager Instance { get; private set; }
-    
+
     [SerializeField] private GameBalanceConfig config;
-    
+
     private void Awake()
     {
         Instance = this;
         LoadConfiguration();
     }
-    
+
     private void LoadConfiguration()
     {
         string configPath = Path.Combine(Application.streamingAssetsPath, "GameBalance", "GameConfig.json");
-        
+
         if (File.Exists(configPath))
         {
             string json = File.ReadAllText(configPath);
@@ -596,7 +756,7 @@ public class BalanceManager : MonoBehaviour
             CreateDefaultConfiguration();
         }
     }
-    
+
     public float GetDamageMultiplier(WeaponType weaponType)
     {
         return weaponType switch
@@ -607,14 +767,14 @@ public class BalanceManager : MonoBehaviour
             _ => 1.0f
         };
     }
-    
+
     public int GetExperienceRequired(int level)
     {
         if (level > 0 && level <= config.progression.experienceTable.Length)
             return config.progression.experienceTable[level - 1];
         return int.MaxValue;
     }
-    
+
     public int GetItemPrice(string category, string itemName)
     {
         // Dynamic price lookup from JSON configuration
@@ -632,13 +792,13 @@ public class ConfigurationWatcher : MonoBehaviour
 {
     private FileSystemWatcher fileWatcher;
     private string configDirectory;
-    
+
     private void Start()
     {
         configDirectory = Path.Combine(Application.streamingAssetsPath, "GameBalance");
         SetupFileWatcher();
     }
-    
+
     private void SetupFileWatcher()
     {
         #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -647,7 +807,7 @@ public class ConfigurationWatcher : MonoBehaviour
         fileWatcher.EnableRaisingEvents = true;
         #endif
     }
-    
+
     private void OnConfigurationChanged(object sender, FileSystemEventArgs e)
     {
         // Reload configuration on file change (development builds only)
@@ -656,7 +816,7 @@ public class ConfigurationWatcher : MonoBehaviour
             StartCoroutine(ReloadConfigurationDelayed());
         }
     }
-    
+
     private IEnumerator ReloadConfigurationDelayed()
     {
         yield return new WaitForSeconds(0.5f); // Wait for file write to complete
@@ -676,22 +836,22 @@ public class ConfigurationValidator
     public static List<string> ValidateConfiguration(GameBalanceConfig config)
     {
         var errors = new List<string>();
-        
+
         // Validate damage multipliers are reasonable
         if (config.combat.damageMultipliers.twoHandedWeapons <= config.combat.damageMultipliers.oneHandedWeapons)
             errors.Add("Two-handed weapons should have higher damage multiplier than one-handed");
-            
+
         // Validate experience table progression
         for (int i = 1; i < config.progression.experienceTable.Length; i++)
         {
             if (config.progression.experienceTable[i] <= config.progression.experienceTable[i - 1])
                 errors.Add($"Experience required for level {i + 1} should be higher than level {i}");
         }
-        
+
         // Validate price consistency
         if (config.economy.shopPrices.weapons.greatSword <= config.economy.shopPrices.weapons.sword)
             errors.Add("Great sword should cost more than regular sword");
-            
+
         // Validate mana costs are positive
         foreach (var school in new[] { config.magic.manaCosts.fire, config.magic.manaCosts.water, config.magic.manaCosts.earth })
         {
@@ -702,7 +862,7 @@ public class ConfigurationValidator
                     errors.Add($"Mana cost for {cost.Name} must be positive");
             }
         }
-        
+
         return errors;
     }
 }
