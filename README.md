@@ -4,10 +4,10 @@ A text-based, turn-based RPG built in Unity featuring Tolkien-inspired fantasy w
 
 ## 🎮 Game Overview
 
-**Genre**: Text-based Turn-based RPG  
-**Platform**: PC (Windows/Mac/Linux), with mobile adaptation potential  
-**Engine**: Unity 2023.3 LTS  
-**Development Status**: Planning & Early Development  
+**Genre**: Text-based Turn-based RPG
+**Platform**: PC (Windows/Mac/Linux), with mobile adaptation potential
+**Engine**: Unity 2023.3 LTS
+**Development Status**: Planning & Early Development
 
 ### Core Features
 
@@ -85,27 +85,32 @@ Comprehensive planning documents are available in the [`Planning/`](Planning/) d
 ## 🎯 Development Phases
 
 ### Phase 1: Foundation (Weeks 1-4) ⏳
+
 - [ ] Project setup and architecture
 - [ ] Core data systems (save/load, currency)
 - [ ] Character data framework
 
 ### Phase 2: Core Gameplay (Weeks 5-12) 📋
+
 - [ ] Character system (classes, attributes, progression)
 - [ ] Turn-based combat mechanics
 - [ ] Magic system with three schools
 - [ ] Equipment and inventory
 
 ### Phase 3: UI and Polish (Weeks 13-18) 🎨
+
 - [ ] Text-based interface design
 - [ ] Combat UI and feedback
 - [ ] Menu systems and navigation
 
 ### Phase 4: Content and Balancing (Weeks 19-24) ⚖️
+
 - [ ] World building and lore
 - [ ] Game balance and testing
 - [ ] Performance optimization
 
 ### Phase 5: Release Preparation (Weeks 25-26) 🚢
+
 - [ ] Final polish and bug fixes
 - [ ] Platform compatibility
 - [ ] Release preparation
@@ -113,7 +118,7 @@ Comprehensive planning documents are available in the [`Planning/`](Planning/) d
 ## 🧪 Testing Strategy
 
 - **Unit Tests**: Pure C# logic testing in EditMode
-- **Integration Tests**: System interactions in PlayMode  
+- **Integration Tests**: System interactions in PlayMode
 - **Manual Testing**: Gameplay balance and user experience
 - **Performance Testing**: Frame rate and memory optimization
 
